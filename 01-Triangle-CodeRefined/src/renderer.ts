@@ -22,7 +22,7 @@ const colorTriangle = new Float32Array([
 ]);
 
 //Indices 
-const Indices = new Uint16Array([0, 1, 2]);
+const indices = new Uint16Array([0, 1, 2]);
 
 
 export default class Renderer{
@@ -33,6 +33,17 @@ export default class Renderer{
     device: GPUDevice;
     queue: GPUQueue;
     
+
+    //Resources which needs to be passed to the GPU 
+    positionBuffer: GPUBuffer;
+    colorBuffer: GPUBuffer;
+    indexBuffer: GPUBuffer;
+
+    //Shader Modules
+    vertModule: GPUShaderModule;
+    fragModule: GPUShaderModule;
+    
+
     constructor(canvas){
         this.canvas = canvas;
     }
@@ -106,14 +117,14 @@ export default class Renderer{
             };
             /*
              Mapping a buffer means that transferring the ownership of the buffer from GPU to  CPU, so that 
-             we can transfer the data into the buffer
+             we can transfer the data into the buffer from the CPU
              When an application requests to map a buffer, it initiates a transfer of the buffer’s ownership
              to the CPU. At this time, the GPU may still need to finish executing some operations that use 
              the buffer, so the transfer doesn’t complete until all previously-enqueued GPU operations are finished.
              That’s why mapping a buffer is an asynchronous operation
              
              Once a GPUBuffer is mapped, it is possible to access its memory from JavaScript This is done by calling 
-             GPUBuffer.getMappedRange, which returns an ArrayBuffer called a "mapping". These are available until
+             GPUBuffer.getMappedRange(), which returns an ArrayBuffer called a "mapping". These are available until
              GPUBuffer.unmap or GPUBuffer.destroy is called, at which point they are detached. These ArrayBuffers
              typically aren’t new allocations, but instead pointers to some kind of shared memory visible to the 
              content process (IPC shared memory, mmapped file descriptor, etc.)
@@ -142,8 +153,59 @@ export default class Renderer{
             writeArray.set(arr);
             buffer.unmap();
             return buffer;
-
         }
+
+        // Create the BUFFERS on the GPU 
+        this.positionBuffer = createBuffer(positionTriangle, GPUBufferUsage.VERTEX);
+        this.colorBuffer = createBuffer(colorTriangle, GPUBufferUsage.VERTEX);
+        this.indexBuffer = createBuffer(indices, GPUBufferUsage.INDEX);
+
+
+        //Initializing the SHADERS
+        const vsmDesc = {
+            code: vertShaderCode
+        };
+        this.vertModule = this.device.createShaderModule(vsmDesc);
+        
+        //Shader Compilation code 
+        var compilationInfo = await this.vertModule.getCompilationInfo();
+        if (compilationInfo.messages.length > 0) {
+            var hadError = false;
+            console.log("Vertex Shader compilation log:");
+            for (var i = 0; i < compilationInfo.messages.length; ++i) {
+                var msg = compilationInfo.messages[i];
+                console.log(`${msg.lineNum}:${msg.linePos} - ${msg.message}`);
+                hadError = hadError || msg.type == "error";
+            }
+            if (hadError) {
+                console.log(" Vertex Shader failed to compile");
+                return;
+            }
+        }
+
+        const fsmDesc = {
+            code: fragShaderCode
+        };
+        this.fragModule = this.device.createShaderModule(fsmDesc);
+
+        
+        compilationInfo = await this.fragModule.getCompilationInfo();
+        if (compilationInfo.messages.length > 0) {
+            var hadError = false;
+            console.log("Fragment Shader compilation log:");
+            for (var i = 0; i < compilationInfo.messages.length; ++i) {
+                var msg = compilationInfo.messages[i];
+                console.log(`${msg.lineNum}:${msg.linePos} - ${msg.message}`);
+                hadError = hadError || msg.type == "error";
+            }
+            if (hadError) {
+                console.log(" Fragment Shader failed to compile");
+                return;
+            }
+        }
+
+
+
     }
 
 }
