@@ -43,6 +43,8 @@ export default class Renderer{
     vertModule: GPUShaderModule;
     fragModule: GPUShaderModule;
     
+    pipeline: GPURenderPipeline;
+
 
     constructor(canvas){
         this.canvas = canvas;
@@ -205,7 +207,77 @@ export default class Renderer{
         }
 
 
+        //Input Assembly
+        const positionAttribDesc: GPUVertexAttribute = {
+            shaderLocation: 0,
+            offset: 0,
+            format: 'float32x3'
+        };
 
+        const colorAttribDesc: GPUVertexAttribute = {
+            shaderLocation: 1,
+            offset: 0,
+            format: 'float32x2'
+        };
+
+        const positionBufferDesc: GPUVertexBufferLayout = {
+            attributes: [positionAttribDesc],
+            arrayStride: 4 * 3, //sizeof(float) * 3
+            stepMode: 'vertex'
+        };
+
+        const colorBufferDesc: GPUVertexBufferLayout = {
+            attributes: [colorAttribDesc],
+            arrayStride: 4 * 3,
+            stepMode: 'vertex'
+        };
+
+        const depthStencil: GPUDepthStencilState = {
+            depthWriteEnabled: true,
+            depthCompare: 'less',
+            format: 'depth24plus-stencil8'
+        };
+
+        // Shader Stages
+        const vertex: GPUVertexState = {
+            module: this.vertModule,
+            entryPoint: 'main',
+            buffers: [positionBufferDesc, colorBufferDesc]
+        };
+
+        const colorState: GPUColorTargetState = {
+            format: 'bgra8unorm'
+        };
+
+        const fragment: GPUFragmentState = {
+            module: this.fragModule,
+            entryPoint: 'main',
+            targets: [colorState]
+        }
+
+        // Rasterization
+        const primitive: GPUPrimitiveState = {
+            frontFace: 'cw',
+            cullMode: 'none',
+            topology: 'triangle-list'
+        }
+
+        //Bind Group Layouts
+        const pipelineLayoutDesc = {bindGroupLayouts: []};
+        const layout = this.device.createPipelineLayout(pipelineLayoutDesc);
+
+
+        const pipelineDesc: GPURenderPipelineDescriptor = {
+            layout,
+
+            vertex,
+            fragment,
+
+            primitive,
+            depthStencil
+        };
+
+        this.pipeline = this.device.createRenderPipeline(pipelineDesc);
     }
 
 }
