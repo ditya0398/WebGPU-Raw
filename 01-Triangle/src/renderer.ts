@@ -64,7 +64,19 @@ export default class Renderer{
 
     }
 
-    //Initialize the WebGPU
+    /*Initialize the WebGPU
+     Each request to access the adapter and the WebGPU device needs an async execution, that is why we use promise here
+     1) Get the GPU Entry point  
+     2) Get the Adaptor(Physical Device) from the entry point  
+     3) Get the device(Logical Device) from the adaptor
+     4) Get the queue
+
+
+      Questions : - What's the difference between a GPUAdapter and GPUDevice in the WebGPU api?
+                    The WebGPU api has both an GPUAdapter and a GPUDevice. But why are there two interfaces for this instead of just one? What was their reasoning when the spec was created?
+                    webgpu
+                    - https://stackoverflow.com/questions/75997043/whats-the-difference-between-a-gpuadapter-and-gpudevice-in-the-webgpu-api
+    */
     async initializeAPI(): Promise<boolean>{
         try{
             //Entry to WebGPU, we get the GPU Device here and start the rendering!
@@ -75,10 +87,14 @@ export default class Renderer{
                 return false;
             }
             //Physical Device Adapter 
+            // The WebGPU Adapter (GPUAdapter) is the API implementation of WebGPU on our GPU.
             this.adapter = await entry.requestAdapter();
+            
             //Logical Device
+            // The GPU Device is the logical connection between our application and the adapter
             this.device = await this.adapter.requestDevice();
-            //Queue
+            
+             //Queue
             this.queue = this.device.queue;   //A Queue allows you to send work asynchronously to the GPU 
         }
         catch(e){
@@ -88,7 +104,22 @@ export default class Renderer{
         return true;
     }
 
-
+    /*
+    1) Create the Buffer
+    2) Shader Modules and their compilation
+    3) Input Assembly 
+    4) Uniform Data - Bind Group Layouts 
+        At a high level, bind groups follow a similar model to vertex buffers in WebGPU.
+        Each bind group specifies an array of buffers and textures which it contains, and the parameter binding indices to map 
+        these too in the shader. Each pipeline specifies that it will use zero or more such bind groups. During rendering,
+        the bind groups required by the pipeline are bound to the corresponding bind group slots specified when creating
+        the pipeline layout, to bind data to the shader parameters. The bind group layout and bind groups using the layout 
+        are treated as separate objects, allowing parameter values to be changed without changing the entire rendering pipeline.
+        By using multiple bind group sets, we can swap out per-object parameters without conflicting with bind groups specifying
+        global parameters during rendering. The bind group parameters can be accessible in both the vertex and fragment stages 
+        (or, compute).An example pipeline using two bind group sets is illustrated in the figure below.
+    5) Pipeline desc 
+    */
     async InitializeResources()
     {
          //Buffers
@@ -99,10 +130,10 @@ export default class Renderer{
            //Align to 4 bytes? Need to read on this more
             let desc = {
                 size: (arr.byteLength + 3) & ~3,
-                usage,
+                usage, // read more on this 
                 mappedAtCreation: true
             };
-         
+        //The createBuffer() method of the GPUDevice interface creates a GPUBuffer in which to store raw data to use in GPU operations.
          let buffer = this.device.createBuffer(desc);
          const writeArray  = 
             arr instanceof Uint16Array
@@ -128,6 +159,7 @@ export default class Renderer{
         };
         this.vertModule = this.device.createShaderModule(vsmDesc);
 
+        //Shader Compilation code 
         var compilationInfo = await this.vertModule.getCompilationInfo();
         if (compilationInfo.messages.length > 0) {
             var hadError = false;
@@ -208,6 +240,7 @@ export default class Renderer{
 
 
         //Uniform Data
+        
         const pipelineLayoutDesc = {bindGroupLayouts: []};
         const layout = this.device.createPipelineLayout(pipelineLayoutDesc);
 
