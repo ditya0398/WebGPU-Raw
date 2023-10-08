@@ -42,8 +42,18 @@ export default class Renderer{
     //Shader Modules
     vertModule: GPUShaderModule;
     fragModule: GPUShaderModule;
-    
+
     pipeline: GPURenderPipeline;
+
+    context: GPUCanvasContext;
+
+    depthTexture: GPUTexture;
+    depthTextureView: GPUTextureView;
+    colorTexture: GPUTexture;
+    colorTextureView: GPUTextureView;
+
+    commandEncoder: GPUCommandEncoder;
+    passEncoder: GPURenderPassEncoder;
 
 
     constructor(canvas){
@@ -52,7 +62,11 @@ export default class Renderer{
 
     //Main entry point function
     async start(){
-    
+        if(await this.initializeAPI()){
+            this.resizeBackings();
+            await this.initializeResources();
+            this.render();
+        }
     }
 
     // WebGPU is an asynchronous API so it’s easiest to use in an async function. 
@@ -280,4 +294,98 @@ export default class Renderer{
         this.pipeline = this.device.createRenderPipeline(pipelineDesc);
     }
 
+    resizeBackings()
+    {
+        if(this.context)
+        {
+            // get the webgpu context
+            this.context = this.canvas.getContext('webgpu');
+
+            //configure the context
+            const canvasConfig: GPUCanvasConfiguration = {
+                device: this.device,
+                format: 'bgra8unorm',
+                usage: 
+                    GPUTextureUsage.RENDER_ATTACHMENT|
+                    GPUTextureUsage.COPY_SRC,
+                    alphaMode: 'opaque'
+            };
+            this.context.configure(canvasConfig);
+        }
+
+        const depthTextureDesc: GPUTextureDescriptor = {
+            size: [this.canvas.width, this.canvas.height, 1],
+            dimension: '2d',
+            format: 'depth24plus-stencil8',
+            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC 
+        }
+
+        this.depthTexture = this.device.createTexture(depthTextureDesc);
+        this.depthTextureView = this.depthTexture.createView();
+    }
+
+    encodeCommands()
+    {
+        let colorAttachment: GPURenderPassColorAttachment = {
+            view: this.colorTextureView,
+            clearValue: {r: 0, g: 0, b: 0, a: 1},
+            loadOp: 'clear',
+            storeOp: 'store'
+        };
+
+        const depthAttachment: GPURenderPassDepthStencilAttachment = {
+            view: this.depthTextureView,
+            depthClearValue: 1,
+            depthLoadOp: 'clear',
+            depthStoreOp: 'store',
+            stencilClearValue: 0,
+            stencilLoadOp: 'clear',
+            stencilStoreOp: 'store'
+        };
+
+        const renderPassDesc: GPURenderPassDescriptor = {
+            colorAttachments: [colorAttachment],
+            depthStencilAttachment: depthAttachment
+        };
+
+        this.commandEncoder = this.device.createCommandEncoder();
+
+        //Encode drawing commands
+        this.passEncoder = this.commandEncoder.beginRenderPass(renderPassDesc);
+        this.passEncoder.setPipeline(this.pipeline);
+        this.passEncoder.setViewport(
+            0,
+            0,
+            this.canvas.width,
+            this.canvas.height,
+            0,
+            1
+        );
+
+        this.passEncoder.setScissorRect(0,
+            0,
+            this.canvas.width,
+            this.canvas.height);
+
+        this.passEncoder.setVertexBuffer(0,this.positionBuffer);
+        this.passEncoder.setVertexBuffer(1,this.colorBuffer);
+
+        this.passEncoder.setIndexBuffer(this.indexBuffer, 'uint16');
+        this.passEncoder.drawIndexed(3,1);
+        this.passEncoder.end();
+
+        this.queue.submit([this.commandEncoder.finish()]);
+    }
+
+    render = () => {
+      //Aquire next image from context
+      this.colorTexture = this.context.getCurrentTexture();
+      this.colorTextureView = this.colorTexture.createView();
+
+      //write and submit commands to queue
+      this.encodeCommands();
+
+      //refresh Canvas
+      requestAnimationFrame(this.render);
+  }
 }
