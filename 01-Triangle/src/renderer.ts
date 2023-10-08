@@ -119,6 +119,7 @@ export default class Renderer{
         global parameters during rendering. The bind group parameters can be accessible in both the vertex and fragment stages 
         (or, compute).An example pipeline using two bind group sets is illustrated in the figure below.
     5) Pipeline desc 
+    6) Create the Pipeline 
     */
     async InitializeResources()
     {
