@@ -18,7 +18,7 @@ const colorTriangle = new Float32Array([
     0.0, // 🟢
     0.0,
     0.0,
-    1.0 // 🔵
+    1.0 //  🔵
 ]);
 
 //Indices 
@@ -30,7 +30,6 @@ class Renderer{
   declare canvas: HTMLCanvasElement;
 
   //API Data Structure
-  declare adapter: GPUAdapter;
   declare device: GPUDevice;
   declare queue: GPUQueue;
   
@@ -46,7 +45,7 @@ class Renderer{
 
   declare pipeline: GPURenderPipeline;
 
-  declare context: GPUCanvasContext;
+  declare context: GPUCanvasContext | null;
 
   declare depthTexture: GPUTexture;
   declare depthTextureView: GPUTextureView;
@@ -92,7 +91,7 @@ class Renderer{
            or software implementation). Two different GPUAdapter objects on the same page could refer to the
            same underlying implementation,or to two different underlying implementations (e.g. integrated and discrete GPUs). */
 
-          this.adapter = await entry.requestAdapter()!;
+            const adapter = await entry.requestAdapter();
 
           //Get the device - Logical Device 
           /*A WebGPU "device" (GPUDevice) represents a logical connection to a WebGPU adapter.
@@ -105,8 +104,12 @@ class Renderer{
            Your page should not be able to access the textures from another page and vice versa.*/ 
           
           /*https://stackoverflow.com/questions/75997043/whats-the-difference-between-a-gpuadapter-and-gpudevice-in-the-webgpu-api*/
-          
-           this.device = await this.adapter.requestDevice();
+          if (!adapter) {
+            console.error("No adapter found");
+            alert("No adapter found");
+            return false;
+          }
+           this.device = await adapter.requestDevice();
 
            //A Queue allows you to send work asynchronously to the GPU    
            this.queue = this.device.queue;
@@ -301,17 +304,19 @@ class Renderer{
       {
           // get the webgpu context
           this.context = this.canvas.getContext('webgpu');
-
-          //configure the context
-          const canvasConfig: GPUCanvasConfiguration = {
-              device: this.device,
-              format: 'bgra8unorm',
-              usage: 
-                  GPUTextureUsage.RENDER_ATTACHMENT|
-                  GPUTextureUsage.COPY_SRC,
-                  alphaMode: 'opaque'
-          };
-          this.context.configure(canvasConfig);
+            if(this.context !== null)
+            {
+                //configure the context
+                const canvasConfig: GPUCanvasConfiguration = {
+                    device: this.device,
+                    format: 'bgra8unorm',
+                    usage: 
+                        GPUTextureUsage.RENDER_ATTACHMENT|
+                        GPUTextureUsage.COPY_SRC,
+                        alphaMode: 'opaque'
+                };
+                this.context.configure(canvasConfig);
+        }
       }
 
       const depthTextureDesc: GPUTextureDescriptor = {
@@ -380,14 +385,17 @@ class Renderer{
 
   render = () => {
     //Aquire next image from context
-    this.colorTexture = this.context.getCurrentTexture();
-    this.colorTextureView = this.colorTexture.createView();
+    if(this.context != null){
+        this.colorTexture = this.context.getCurrentTexture();
+        this.colorTextureView = this.colorTexture.createView();
 
-    //write and submit commands to queue
-    this.encodeCommands();
 
-    //refresh Canvas
-    requestAnimationFrame(this.render);
+        //write and submit commands to queue
+        this.encodeCommands();
+
+        //refresh Canvas
+        requestAnimationFrame(this.render);
+    }
 }
 }
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
