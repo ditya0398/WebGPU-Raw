@@ -231,8 +231,8 @@ export default class Renderer{
         const colorAttribDesc: GPUVertexAttribute = {
             shaderLocation: 1,
             offset: 0,
-            format: 'float32x2'
-        };
+            format: 'float32x3'
+        }; 
 
         const positionBufferDesc: GPUVertexBufferLayout = {
             attributes: [positionAttribDesc],
@@ -296,7 +296,7 @@ export default class Renderer{
 
     resizeBackings()
     {
-        if(this.context)
+        if(!this.context)
         {
             // get the webgpu context
             this.context = this.canvas.getContext('webgpu');
