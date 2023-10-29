@@ -13,6 +13,7 @@
     "vite": "^4.4.5"
   },
   "dependencies": {
-    "@webgpu/types": "^0.1.38"
+    "@webgpu/types": "^0.1.38",
+    "gl-matrix": "^3.4.3"
   }
 }

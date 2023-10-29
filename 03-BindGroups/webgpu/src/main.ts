@@ -1,5 +1,6 @@
 import vertShaderCode from './shaders/triangle.vert.wgsl?raw';
 import fragShaderCode from './shaders/triangle.frag.wgsl?raw';
+import {mat4, vec3} from "gl-matrix";
 
 //Define the position for the Triangle which will be passed to the Shader
 const positionTriangle = new Float32Array([
@@ -53,6 +54,10 @@ class Renderer{
   declare commandEncoder: GPUCommandEncoder;
   declare passEncoder: GPURenderPassEncoder;
 
+  declare proj: mat4; 
+  declare projView: mat4;
+  declare viewParamBG: GPUBindGroup;
+  declare viewParamsBuffer:GPUBuffer;
 
   constructor(canvas: HTMLCanvasElement){
       this.canvas = canvas;
@@ -278,8 +283,28 @@ class Renderer{
       }
 
       //Bind Group Layouts
-      const pipelineLayoutDesc = {bindGroupLayouts: []};
+      var bindGroupLayout = this.device.createBindGroupLayout({
+        entries: [{binding: 0, visibility: GPUShaderStage.VERTEX, buffer: {type: 'uniform'}}]
+      });
+
+
+
+      const pipelineLayoutDesc = {bindGroupLayouts: [bindGroupLayout]};
       const layout = this.device.createPipelineLayout(pipelineLayoutDesc);
+
+      
+        //creating the uniform buffer
+        this.viewParamsBuffer = this.device.createBuffer({
+            size: 16*4,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+
+        // Create a bind group which places our view params buffer at binding 0
+         this.viewParamBG = this.device.createBindGroup({
+            layout: bindGroupLayout,
+            entries: [{binding: 0, resource: {buffer: this.viewParamsBuffer}}]
+        });
+
 
 
       const pipelineDesc: GPURenderPipelineDescriptor = {
@@ -293,6 +318,9 @@ class Renderer{
       };
 
       this.pipeline = this.device.createRenderPipeline(pipelineDesc);
+
+
+      
   }
 
   resizeBackings()
@@ -325,6 +353,11 @@ class Renderer{
 
       this.depthTexture = this.device.createTexture(depthTextureDesc);
       this.depthTextureView = this.depthTexture.createView();
+
+      
+      this.proj = mat4.perspective(
+      mat4.create(), 100 * Math.PI / 180.0, this.canvas.width / this.canvas.height, 0.1, 100);
+      this.projView = mat4.create();
   }
 
   encodeCommands()
@@ -351,8 +384,25 @@ class Renderer{
           depthStencilAttachment: depthAttachment
       };
 
-      this.commandEncoder = this.device.createCommandEncoder();
 
+      // Update camera buffer
+      let cameraMatrix: mat4 = mat4.create();
+      var camera = mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
+      this.projView = mat4.mul(this.projView, this.proj, camera);
+
+      var upload = this.device.createBuffer(
+          {size: 16 * 4, usage: GPUBufferUsage.COPY_SRC, mappedAtCreation: true});
+      {
+          var map = new Float32Array(upload.getMappedRange());
+          map.set(this.projView);
+          upload.unmap();
+      }
+
+
+
+
+      this.commandEncoder = this.device.createCommandEncoder();
+      this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
       //Encode drawing commands
       this.passEncoder = this.commandEncoder.beginRenderPass(renderPassDesc);
       this.passEncoder.setPipeline(this.pipeline);
@@ -372,7 +422,7 @@ class Renderer{
 
       this.passEncoder.setVertexBuffer(0,this.positionBuffer);
       this.passEncoder.setVertexBuffer(1,this.colorBuffer);
-
+      this.passEncoder.setBindGroup(0, this.viewParamBG);
       this.passEncoder.draw(3);
       this.passEncoder.end();
 
