@@ -21,8 +21,6 @@ const colorTriangle = new Float32Array([
     1.0 //  🔵
 ]);
 
-//Indices 
-const indices = new Uint16Array([0, 1, 2]);
 
 
 
@@ -37,7 +35,7 @@ class Renderer{
   //Resources which needs to be passed to the GPU 
   declare positionBuffer: GPUBuffer;
   declare colorBuffer: GPUBuffer;
-  declare indexBuffer: GPUBuffer;
+  
 
   //Shader Modules
   declare vertModule: GPUShaderModule;
@@ -178,8 +176,7 @@ class Renderer{
       // Create the BUFFERS on the GPU 
       this.positionBuffer = createBuffer(positionTriangle, GPUBufferUsage.VERTEX);
       this.colorBuffer = createBuffer(colorTriangle, GPUBufferUsage.VERTEX);
-      this.indexBuffer = createBuffer(indices, GPUBufferUsage.INDEX);
-
+      
 
       //Initializing the SHADERS
       const vsmDesc = {
@@ -376,8 +373,7 @@ class Renderer{
       this.passEncoder.setVertexBuffer(0,this.positionBuffer);
       this.passEncoder.setVertexBuffer(1,this.colorBuffer);
 
-      this.passEncoder.setIndexBuffer(this.indexBuffer, 'uint16');
-      this.passEncoder.drawIndexed(3,1);
+      this.passEncoder.draw(3);
       this.passEncoder.end();
 
       this.queue.submit([this.commandEncoder.finish()]);
