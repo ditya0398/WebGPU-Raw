@@ -33,7 +33,6 @@ class Renderer{
   declare device: GPUDevice;
   declare queue: GPUQueue;
   
-
   //Resources which needs to be passed to the GPU 
   declare positionBuffer: GPUBuffer;
   declare colorBuffer: GPUBuffer;
@@ -122,6 +121,7 @@ class Renderer{
       return true;
   }
   
+  //Creates a buffer on the GPU
     createBuffer = (
     arr: Float32Array | Uint16Array,
     usage: number
@@ -173,6 +173,7 @@ class Renderer{
     return buffer;
   }
 
+  //gets the Shader Compilation Log
     getShaderCompilationStatus = (
         compilationInfo: GPUCompilationInfo,
         text: string
@@ -195,6 +196,7 @@ class Renderer{
             console.log( text + " Compiled Successfully!!!")
         }
     }
+
   async initializeResources()
   {
       // Create the BUFFERS on the GPU 
@@ -327,7 +329,7 @@ class Renderer{
       this.depthTexture = this.device.createTexture(depthTextureDesc);
       this.depthTextureView = this.depthTexture.createView();
   }
-
+  
   encodeCommands()
   {
       let colorAttachment: GPURenderPassColorAttachment = {
@@ -386,7 +388,6 @@ class Renderer{
     if(this.context != null){
         this.colorTexture = this.context.getCurrentTexture();
         this.colorTextureView = this.colorTexture.createView();
-
 
         //write and submit commands to queue
         this.encodeCommands();
