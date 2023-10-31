@@ -297,7 +297,7 @@ class Renderer{
 
       this.pipeline = this.device.createRenderPipeline(pipelineDesc);
   }
-
+ 
   resizeBackings()
   {
       if(!this.context)

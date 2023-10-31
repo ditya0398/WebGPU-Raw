@@ -1,6 +1,6 @@
 import vertShaderCode from './shaders/triangle.vert.wgsl?raw';
 import fragShaderCode from './shaders/triangle.frag.wgsl?raw';
-import {mat4, vec3} from "gl-matrix";
+import { mat4 } from 'gl-matrix';
 
 //Define the position for the Triangle which will be passed to the Shader
 const positionTriangle = new Float32Array([
@@ -22,6 +22,8 @@ const colorTriangle = new Float32Array([
     1.0 //  🔵
 ]);
 
+//Indices 
+const indices = new Uint16Array([0, 1, 2]);
 
 
 
@@ -32,11 +34,10 @@ class Renderer{
   declare device: GPUDevice;
   declare queue: GPUQueue;
   
-
   //Resources which needs to be passed to the GPU 
   declare positionBuffer: GPUBuffer;
   declare colorBuffer: GPUBuffer;
-  
+  declare indexBuffer: GPUBuffer;
 
   //Shader Modules
   declare vertModule: GPUShaderModule;
@@ -54,6 +55,7 @@ class Renderer{
   declare commandEncoder: GPUCommandEncoder;
   declare passEncoder: GPURenderPassEncoder;
 
+  
   declare proj: mat4; 
   declare projView: mat4;
   declare viewParamBG: GPUBindGroup;
@@ -124,64 +126,90 @@ class Renderer{
       }
       return true;
   }
+  
+  //Creates a buffer on the GPU
+    createBuffer = (
+    arr: Float32Array | Uint16Array,
+    usage: number
+) => {
+    // Align to 4 bytes
+    let desc = {
+        size: (arr.byteLength + 3) & ~ 3,
+        usage, 
+        mappedAtCreation: true // specifying here that buffer is mappable and you can set the 
+                               // initial data by calling buffer.getMappedRange()
+    };
+    /*
+     Mapping a buffer means that transferring the ownership of the buffer from GPU to  CPU, so that 
+     we can transfer the data into the buffer from the CPU
+     When an application requests to map a buffer, it initiates a transfer of the buffer’s ownership
+     to the CPU. At this time, the GPU may still need to finish executing some operations that use 
+     the buffer, so the transfer doesn’t complete until all previously-enqueued GPU operations are finished.
+     That’s why mapping a buffer is an asynchronous operation
+     
+     Once a GPUBuffer is mapped, it is possible to access its memory from JavaScript This is done by calling 
+     GPUBuffer.getMappedRange(), which returns an ArrayBuffer called a "mapping". These are available until
+     GPUBuffer.unmap or GPUBuffer.destroy is called, at which point they are detached. These ArrayBuffers
+     typically aren’t new allocations, but instead pointers to some kind of shared memory visible to the 
+     content process (IPC shared memory, mmapped file descriptor, etc.)
+
+     Once the application has finished using the buffer on the CPU, it can transfer ownership back to
+     the GPU by unmapping it. This is an immediate operation that makes the application lose all access to 
+     the buffer on the CPU (i.e. detaches ArrayBuffers)
+     
+     So, to SUMARIZE everything - 
+     A common need is to create a GPUBuffer that is already filled with some data. This could be achieved
+     by creating a final buffer, then a mappable buffer, filling the mappable buffer, and then copying from
+     the mappable to the final buffer, but this would be inefficient. Instead this can be done by making the
+     buffer CPU-owned at creation: we call this "mapped at creation". All buffers can be mapped at creation,
+     even if they don’t have the MAP_WRITE buffer usages. The browser will just handle the transfer of data
+     into the buffer for the application.
+     Once a buffer is mapped at creation, it behaves as regularly mapped buffer: GPUBUffer.getMappedRange()
+     is used to retrieve ArrayBuffers, and ownership is transferred to the GPU with GPUBuffer.unmap().
+     
+     */
+    let buffer = this.device.createBuffer(desc);
+    const writeArray = 
+    arr instanceof Uint16Array
+        ? new Uint16Array(buffer.getMappedRange())
+        : new Float32Array(buffer.getMappedRange());
+    
+    writeArray.set(arr);
+    buffer.unmap();
+    return buffer;
+  }
+
+  //gets the Shader Compilation Log
+    getShaderCompilationStatus = (
+        compilationInfo: GPUCompilationInfo,
+        text: string
+    ) => {
+        if (compilationInfo.messages.length > 0) {
+            var hadError = false;
+            console.log( text + " compilation log:");
+            for (var i = 0; i < compilationInfo.messages.length; ++i) {
+                var msg = compilationInfo.messages[i];
+                console.log(`${msg.lineNum}:${msg.linePos} - ${msg.message}`);
+                hadError = hadError || msg.type == "error";
+            }
+            if (hadError) {
+                console.log( text + " failed to compile");
+                return;
+            }
+        }
+        else
+        {
+            console.log( text + " Compiled Successfully!!!")
+        }
+    }
 
   async initializeResources()
   {
-      const createBuffer = (
-          arr: Float32Array | Uint16Array,
-          usage: number
-      ) => {
-          // Align to 4 bytes
-          let desc = {
-              size: (arr.byteLength + 3) & ~ 3,
-              usage, 
-              mappedAtCreation: true // specifying here that buffer is mappable and you can set the 
-                                     // initial data by calling buffer.getMappedRange()
-          };
-          /*
-           Mapping a buffer means that transferring the ownership of the buffer from GPU to  CPU, so that 
-           we can transfer the data into the buffer from the CPU
-           When an application requests to map a buffer, it initiates a transfer of the buffer’s ownership
-           to the CPU. At this time, the GPU may still need to finish executing some operations that use 
-           the buffer, so the transfer doesn’t complete until all previously-enqueued GPU operations are finished.
-           That’s why mapping a buffer is an asynchronous operation
-           
-           Once a GPUBuffer is mapped, it is possible to access its memory from JavaScript This is done by calling 
-           GPUBuffer.getMappedRange(), which returns an ArrayBuffer called a "mapping". These are available until
-           GPUBuffer.unmap or GPUBuffer.destroy is called, at which point they are detached. These ArrayBuffers
-           typically aren’t new allocations, but instead pointers to some kind of shared memory visible to the 
-           content process (IPC shared memory, mmapped file descriptor, etc.)
-
-           Once the application has finished using the buffer on the CPU, it can transfer ownership back to
-           the GPU by unmapping it. This is an immediate operation that makes the application lose all access to 
-           the buffer on the CPU (i.e. detaches ArrayBuffers)
-           
-           So, to SUMARIZE everything - 
-           A common need is to create a GPUBuffer that is already filled with some data. This could be achieved
-           by creating a final buffer, then a mappable buffer, filling the mappable buffer, and then copying from
-           the mappable to the final buffer, but this would be inefficient. Instead this can be done by making the
-           buffer CPU-owned at creation: we call this "mapped at creation". All buffers can be mapped at creation,
-           even if they don’t have the MAP_WRITE buffer usages. The browser will just handle the transfer of data
-           into the buffer for the application.
-           Once a buffer is mapped at creation, it behaves as regularly mapped buffer: GPUBUffer.getMappedRange()
-           is used to retrieve ArrayBuffers, and ownership is transferred to the GPU with GPUBuffer.unmap().
-           
-           */
-          let buffer = this.device.createBuffer(desc);
-          const writeArray = 
-          arr instanceof Uint16Array
-              ? new Uint16Array(buffer.getMappedRange())
-              : new Float32Array(buffer.getMappedRange());
-          
-          writeArray.set(arr);
-          buffer.unmap();
-          return buffer;
-      }
-
       // Create the BUFFERS on the GPU 
-      this.positionBuffer = createBuffer(positionTriangle, GPUBufferUsage.VERTEX);
-      this.colorBuffer = createBuffer(colorTriangle, GPUBufferUsage.VERTEX);
-      
+      this.positionBuffer = this.createBuffer(positionTriangle, GPUBufferUsage.VERTEX);
+      this.colorBuffer = this.createBuffer(colorTriangle, GPUBufferUsage.VERTEX);
+      this.indexBuffer = this.createBuffer(indices, GPUBufferUsage.INDEX);
+
 
       //Initializing the SHADERS
       const vsmDesc = {
@@ -191,19 +219,7 @@ class Renderer{
       
       //Shader Compilation code 
       var compilationInfo = await this.vertModule.getCompilationInfo();
-      if (compilationInfo.messages.length > 0) {
-          var hadError = false;
-          console.log("Vertex Shader compilation log:");
-          for (var i = 0; i < compilationInfo.messages.length; ++i) {
-              var msg = compilationInfo.messages[i];
-              console.log(`${msg.lineNum}:${msg.linePos} - ${msg.message}`);
-              hadError = hadError || msg.type == "error";
-          }
-          if (hadError) {
-              console.log(" Vertex Shader failed to compile");
-              return;
-          }
-      }
+      this.getShaderCompilationStatus(compilationInfo, "Vertex Shader");
 
       const fsmDesc = {
           code: fragShaderCode
@@ -212,20 +228,9 @@ class Renderer{
 
       
       compilationInfo = await this.fragModule.getCompilationInfo();
-      if (compilationInfo.messages.length > 0) {
-          var hadError = false;
-          console.log("Fragment Shader compilation log:");
-          for (var i = 0; i < compilationInfo.messages.length; ++i) {
-              var msg = compilationInfo.messages[i];
-              console.log(`${msg.lineNum}:${msg.linePos} - ${msg.message}`);
-              hadError = hadError || msg.type == "error";
-          }
-          if (hadError) {
-              console.log(" Fragment Shader failed to compile");
-              return;
-          }
-      }
+      this.getShaderCompilationStatus(compilationInfo, "Fragment Shader");
 
+      
 
       //Input Assembly
       const positionAttribDesc: GPUVertexAttribute = {
@@ -282,6 +287,7 @@ class Renderer{
           topology: 'triangle-list'
       }
 
+     
       //Bind Group Layouts
       var bindGroupLayout = this.device.createBindGroupLayout({
         entries: [{binding: 0, visibility: GPUShaderStage.VERTEX, buffer: {type: 'uniform'}}]
@@ -306,7 +312,6 @@ class Renderer{
         });
 
 
-
       const pipelineDesc: GPURenderPipelineDescriptor = {
           layout,
 
@@ -319,10 +324,11 @@ class Renderer{
 
       this.pipeline = this.device.createRenderPipeline(pipelineDesc);
 
-
-      
+      this.proj = mat4.perspective(
+        mat4.create(), 100 * Math.PI / 180.0, this.canvas.width / this.canvas.height, 0.1, 100);
+        this.projView = mat4.create();
   }
-
+ 
   resizeBackings()
   {
       if(!this.context)
@@ -353,13 +359,8 @@ class Renderer{
 
       this.depthTexture = this.device.createTexture(depthTextureDesc);
       this.depthTextureView = this.depthTexture.createView();
-
-      
-      this.proj = mat4.perspective(
-      mat4.create(), 100 * Math.PI / 180.0, this.canvas.width / this.canvas.height, 0.1, 100);
-      this.projView = mat4.create();
   }
-
+  
   encodeCommands()
   {
       let colorAttachment: GPURenderPassColorAttachment = {
@@ -384,7 +385,6 @@ class Renderer{
           depthStencilAttachment: depthAttachment
       };
 
-
       // Update camera buffer
       let cameraMatrix: mat4 = mat4.create();
       var camera = mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
@@ -399,10 +399,8 @@ class Renderer{
       }
 
 
-
-
       this.commandEncoder = this.device.createCommandEncoder();
-      this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
+        this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
       //Encode drawing commands
       this.passEncoder = this.commandEncoder.beginRenderPass(renderPassDesc);
       this.passEncoder.setPipeline(this.pipeline);
@@ -423,7 +421,8 @@ class Renderer{
       this.passEncoder.setVertexBuffer(0,this.positionBuffer);
       this.passEncoder.setVertexBuffer(1,this.colorBuffer);
       this.passEncoder.setBindGroup(0, this.viewParamBG);
-      this.passEncoder.draw(3);
+      this.passEncoder.setIndexBuffer(this.indexBuffer, 'uint16');
+      this.passEncoder.drawIndexed(3,1);
       this.passEncoder.end();
 
       this.queue.submit([this.commandEncoder.finish()]);
@@ -434,7 +433,6 @@ class Renderer{
     if(this.context != null){
         this.colorTexture = this.context.getCurrentTexture();
         this.colorTextureView = this.colorTexture.createView();
-
 
         //write and submit commands to queue
         this.encodeCommands();
