@@ -387,8 +387,13 @@ class Renderer{
 
       // Update camera buffer
       let cameraMatrix: mat4 = mat4.create();
+      let modelMatrix: mat4 = mat4.create();
+      let modelViewMat: mat4 = mat4.create();
+
       var camera = mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
-      this.projView = mat4.mul(this.projView, this.proj, camera);
+      mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,-2.0]);
+      mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
+      this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
 
       var upload = this.device.createBuffer(
           {size: 16 * 4, usage: GPUBufferUsage.COPY_SRC, mappedAtCreation: true});
@@ -442,6 +447,7 @@ class Renderer{
     }
 }
 }
+
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
 renderer.start();
