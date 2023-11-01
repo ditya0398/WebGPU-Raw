@@ -4,44 +4,135 @@ import { mat4 } from 'gl-matrix';
 
 //Define the position for the Triangle which will be passed to the Shader
 const positionSquare = new Float32Array([
-    -1.0 , 1.0 , -1.0 , //let top
+    -1.0 , 1.0 , -1.0 , //le t top
     1.0 , 1.0 , -1.0 , //right top
     -1.0 , -1.0 , -1.0 , //le t bottom
     -1.0 , -1.0 , -1.0 , //le t bottom o  2nd triangle
     1.0 , 1.0 , -1.0 , //right top o  2nd triangle
     1.0 , -1.0 , -1.0 , //right bottom o  2nd triangle
+    //right side
+    1.0 , 1.0 , -1.0 , //right top
+    1.0 , 1.0 , 1.0 , //le t top
+    1.0 , -1.0 , -1.0 , //le t bottom
+    1.0 , -1.0 , -1.0 , //le t bottom o  2nd triangle		
+    1.0 , 1.0 , 1.0 , //right top o  2nd triangle		
+    1.0 , -1.0 , 1.0 , //right bottom o  2nd triangle
+    //Back
+    -1.0 , 1.0 , 1.0 , //le t top
+    1.0 , 1.0 , 1.0 , //right top
+    -1.0 , -1.0 , 1.0 , //le t bottom
+    -1.0 , -1.0 , 1.0 , //le t bottom o  2nd triangle
+    1.0 , 1.0 , 1.0 , //right top o  2nd triangle
+    1.0 , -1.0 , 1.0 , //right bottom o  2nd triangle
+    //Le t side
+    -1.0 , 1.0 , -1.0 , //right top
+    -1.0 , 1.0 , 1.0 , //le t top
+    -1.0 , -1.0 , -1.0 , //le t bottom
+    -1.0 , -1.0 , -1.0 , //le t bottom o  2nd triangle		
+    -1.0 , 1.0 , 1.0 , //right top o  2nd triangle		
+    -1.0 , -1.0 , 1.0 , //right bottom o  2nd triangle
+    //Top
+    -1.0 , 1.0 , 1.0 , //le t top
+     1.0 , 1.0 , 1.0 , //right top
+    -1.0 , 1.0 , -1.0 , //le t bottom
+    -1.0 , 1.0 , -1.0 , //le t bottom o  2nd triangle		
+     1.0 , 1.0 , 1.0 , //right top o  2nd triangle		
+     1.0 , 1.0 , -1.0 , //right bottom o  2nd triangle
+     //Bottom
+    -1.0 , -1.0 , 1.0 , //le t top
+     1.0 , -1.0 , 1.0 , //right top
+    -1.0 , -1.0 , -1.0 , //le t bottom
+    -1.0 , -1.0 , -1.0 , //le t bottom o  2nd triangle		
+     1.0 , -1.0 , 1.0 , //right top o  2nd triangle		
+     1.0 , -1.0 , -1.0 , //right bottom of 2nd triangle
+
 ]);
 
 //Define the Color data
 const colorSquare = new Float32Array([
-   //Front face color
-   0.0 , 1.0 , 1.0 ,//corn  lower color
-   0.0 , 1.0 , 1.0 ,//corn  lower color
-   0.0 , 1.0 , 1.0 ,//corn  lower color
-   0.0 , 1.0 , 1.0 ,//corn  lower color
-   0.0 , 1.0 , 1.0 ,//corn  lower color
-   0.0 , 1.0 , 1.0 ,//corn  lower color
+  //Front face color
+  0.0 , 1.0 , 1.0 ,//corn  lower color
+  0.0 , 1.0 , 1.0 ,//corn  lower color
+  0.0 , 1.0 , 1.0 ,//corn  lower color
+  0.0 , 1.0 , 1.0 ,//corn  lower color
+  0.0 , 1.0 , 1.0 ,//corn  lower color
+  0.0 , 1.0 , 1.0 ,//corn  lower color
+  //Right  ace color
+  0.0 , 1.0 , 0.0 ,//green color
+  0.0 , 1.0 , 0.0 ,//green color
+  0.0 , 1.0 , 0.0 ,//green color
+  0.0 , 1.0 , 0.0 ,//green color
+  0.0 , 1.0 , 0.0 ,//green color
+  0.0 , 1.0 , 0.0 ,//green color
+  //Back  ace color
+  1.0 , 0.0 , 0.0 ,//red color
+  1.0 , 0.0 , 0.0 ,//red color
+  1.0 , 0.0 , 0.0 ,//red color
+  1.0 , 0.0 , 0.0 ,//red color
+  1.0 , 0.0 , 0.0 ,//red color
+  1.0 , 0.0 , 0.0 ,//red color
+  //Le t  ace color
+  1.0 , 1.0 , 0.0 ,//Yellow color
+  1.0 , 1.0 , 0.0 ,//Yellow color
+  1.0 , 1.0 , 0.0 ,//Yellow color
+  1.0 , 1.0 , 0.0 ,//Yellow color
+  1.0 , 1.0 , 0.0 ,//Yellow color
+  1.0 , 1.0 , 0.0 ,//Yellow color
+  //Top  ace color
+  1.0 , 0.0 , 1.0 ,//green color
+  1.0 , 0.0 , 1.0 ,//green color
+  1.0 , 0.0 , 1.0 ,//green color
+  1.0 , 0.0 , 1.0 ,//green color
+  1.0 , 0.0 , 1.0 ,//green color
+  1.0 , 0.0 , 1.0 ,//green color
+  //Bottom  ace color
+  1.0 , 0.5 , 0.0 ,//Orange color
+  1.0 , 0.5 , 0.0 ,//Orange color
+  1.0 , 0.5 , 0.0 ,//Orange color
+  1.0 , 0.5 , 0.0 ,//Orange color
+  1.0 , 0.5 , 0.0 ,//Orange color
+  1.0 , 0.5 , 0.0 ,//Orange color
+
 ]);
 
 
 //Define the position for the Triangle which will be passed to the Shader
 const positionTriangle= new Float32Array([
-    1.0,-1.0,0.0,
-    -1.0,-1.0,0.0,
-    0.0,1.0,0.0
+    0.0 , 1.0 , 0.0 , //apex
+    1.0 , -1.0 , -1.0 , //right
+    -1.0 , -1.0 , -1.0 ,
+    //Right  ace
+    0.0 , 1.0 , 0.0 , //apex
+    1.0 , -1.0 , 1.0 , //right
+    1.0 , -1.0 , -1.0 ,
+    //Back  ace
+    0.0 , 1.0 , 0.0 , //apex
+    -1.0 , -1.0 , 1.0 , //right
+    1.0 , -1.0 , 1.0 ,
+    //Le t  ace
+    0.0 , 1.0 , 0.0 , //apex
+    -1.0 , -1.0 , -1.0 ,
+    -1.0 , -1.0 , 1.0 , //right
 ]);
 
 //Define the Color data
 const colorTriangle = new Float32Array([
-    1.0,
-    0.0,
-    0.0, // 🔴
-    0.0,
-    1.0,
-    0.0, // 🟢
-    0.0,
-    0.0,
-    1.0 // 🔵
+  //Front face color
+  1.0 ,0.0 ,0.0 ,
+  0.0 ,0.0 ,1.0 ,
+  0.0 ,1.0 ,0.0 ,
+
+  1.0 ,0.0 ,0.0 ,
+  0.0 ,0.0 ,1.0 ,
+  0.0 ,1.0 ,0.0 ,
+
+  1.0 ,0.0 ,0.0 ,
+  0.0 ,0.0 ,1.0 ,
+  0.0 ,1.0 ,0.0 ,
+
+  1.0 ,0.0 ,0.0 ,
+  0.0 ,0.0 ,1.0 ,
+  0.0 ,1.0 ,0.0 ,
 ]);
 class Renderer{
   declare canvas: HTMLCanvasElement;
@@ -412,22 +503,24 @@ class Renderer{
       let modelMatrix: mat4 = mat4.create();
       let modelViewMat: mat4 = mat4.create();
 
-      var camera = mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
-      mat4.translate(modelMatrix,modelMatrix,[-3.0,0.0,-2.0]);
+      mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
+      mat4.translate(modelMatrix,modelMatrix,[-4.0,0.0,-5.0]);
+      const now = Date.now() / 1000;
+       mat4.rotate(
+           modelMatrix,
+           modelMatrix, 1,
+         [Math.sin(now), Math.cos(now), 0]
+       );
+       mat4.mul(modelViewMat, modelMatrix, cameraMatrix);
+       
+      
       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
       this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
 
-    //   var upload = this.device.createBuffer(
-    //       {size: 16 * 4, usage: GPUBufferUsage.COPY_SRC, mappedAtCreation: true});
-    //   {
-    //       var map = new Float32Array(upload.getMappedRange());
-    //       map.set(this.projView);
-    //       upload.unmap();
-    //   }
-     this.device.queue.writeBuffer(this.uniformBuffer,0,this.projView);
+      this.device.queue.writeBuffer(this.uniformBuffer,0,this.projView);
 
       this.commandEncoder = this.device.createCommandEncoder();
-      //this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
+     
       //Encode drawing commands
       this.passEncoder = this.commandEncoder.beginRenderPass(renderPassDesc);
       this.passEncoder.setPipeline(this.pipeline);
@@ -449,7 +542,7 @@ class Renderer{
       this.passEncoder.setVertexBuffer(1,this.colorBufferTriangle);
       this.passEncoder.setBindGroup(0, this.viewParamBGTriangle);
       
-      this.passEncoder.draw(3,1,0);
+      this.passEncoder.draw(12,1,0);
 
 
       // For Square
@@ -457,10 +550,19 @@ class Renderer{
        cameraMatrix = mat4.create();
        modelMatrix = mat4.create();
        modelViewMat = mat4.create();
-       mat4.translate(modelMatrix,modelMatrix,[2.0,0.0,-2.0]);
-       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
+       mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,-6.0]);
+      
+       mat4.rotate(
+           modelMatrix,
+           modelMatrix, 1,
+         [Math.sin(now), Math.cos(now), 0]
+       );
+       mat4.mul(modelViewMat, modelMatrix, cameraMatrix);
+       
+      
        mat4.mul(this.projView, this.proj, modelViewMat);
-   
+     
+       
        this.device.queue.writeBuffer(this.uniformBuffer, 256 ,this.projView);
 
       // this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
@@ -468,7 +570,7 @@ class Renderer{
       this.passEncoder.setVertexBuffer(1,this.colorBufferSquare);
       this.passEncoder.setBindGroup(0, this.viewParamBGSquare);
       
-      this.passEncoder.draw(6,1,0);
+      this.passEncoder.draw(36,1,0);
 
       this.passEncoder.end();
 
