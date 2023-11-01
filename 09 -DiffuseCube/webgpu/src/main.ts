@@ -3,7 +3,7 @@ import fragShaderCode from './shaders/triangle.frag.wgsl?raw';
 import { mat4 } from 'gl-matrix';
 
 //Define the position for the Triangle which will be passed to the Shader
-const positionSquare = new Float32Array([
+const verticesCube = new Float32Array([
     -1.0, 1.0, -1.0, //le t top
     1.0, 1.0, -1.0, //right top
     -1.0, -1.0, -1.0, //le t bottom
@@ -49,7 +49,7 @@ const positionSquare = new Float32Array([
 ]);
 
 //Define the Color data
-const colorSquare = new Float32Array([
+const colorCube = new Float32Array([
     //Front face color
     0.0, 1.0, 1.0,//corn  lower color
     0.0, 1.0, 1.0,//corn  lower color
@@ -95,45 +95,6 @@ const colorSquare = new Float32Array([
 
 ]);
 
-
-//Define the position for the Triangle which will be passed to the Shader
-const positionTriangle = new Float32Array([
-    0.0, 1.0, 0.0, //apex
-    1.0, -1.0, -1.0, //right
-    -1.0, -1.0, -1.0,
-    //Right  ace
-    0.0, 1.0, 0.0, //apex
-    1.0, -1.0, 1.0, //right
-    1.0, -1.0, -1.0,
-    //Back  ace
-    0.0, 1.0, 0.0, //apex
-    -1.0, -1.0, 1.0, //right
-    1.0, -1.0, 1.0,
-    //Le t  ace
-    0.0, 1.0, 0.0, //apex
-    -1.0, -1.0, -1.0,
-    -1.0, -1.0, 1.0, //right
-]);
-
-//Define the Color data
-const colorTriangle = new Float32Array([
-    //Front face color
-    1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0,
-    0.0, 1.0, 0.0,
-
-    1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0,
-    0.0, 1.0, 0.0,
-
-    1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0,
-    0.0, 1.0, 0.0,
-
-    1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0,
-    0.0, 1.0, 0.0,
-]);
 class Renderer {
     declare canvas: HTMLCanvasElement;
 
@@ -142,8 +103,6 @@ class Renderer {
     declare queue: GPUQueue;
 
     //Resources which needs to be passed to the GPU 
-    declare positionBufferTriangle: GPUBuffer;
-    declare colorBufferTriangle: GPUBuffer;
     declare positionBufferSquare: GPUBuffer;
     declare colorBufferSquare: GPUBuffer;
 
@@ -167,7 +126,6 @@ class Renderer {
 
     declare proj: mat4;
     declare projView: mat4;
-    declare viewParamBGTriangle: GPUBindGroup;
     declare viewParamBGSquare: GPUBindGroup;
     declare uniformBuffer: GPUBuffer;
     declare bFullscreen: boolean;
@@ -335,10 +293,8 @@ class Renderer {
 
     async initializeResources() {
         // Create the BUFFERS on the GPU 
-        this.positionBufferTriangle = this.createBuffer(positionTriangle, GPUBufferUsage.VERTEX);
-        this.colorBufferTriangle = this.createBuffer(colorTriangle, GPUBufferUsage.VERTEX);
-        this.positionBufferSquare = this.createBuffer(positionSquare, GPUBufferUsage.VERTEX);
-        this.colorBufferSquare = this.createBuffer(colorSquare, GPUBufferUsage.VERTEX);
+        this.positionBufferSquare = this.createBuffer(verticesCube, GPUBufferUsage.VERTEX);
+        this.colorBufferSquare = this.createBuffer(colorCube, GPUBufferUsage.VERTEX);
 
         //Initializing the SHADERS
         const vsmDesc = {
@@ -435,13 +391,10 @@ class Renderer {
         });
 
         // Create a bind group which places our view params buffer at binding 0
-        this.viewParamBGTriangle = this.device.createBindGroup({
-            layout: bindGroupLayout,
-            entries: [{ binding: 0, resource: { buffer: this.uniformBuffer, size: 16 * 4, offset: 0 } }]
-        });
+       
         this.viewParamBGSquare = this.device.createBindGroup({
             layout: bindGroupLayout,
-            entries: [{ binding: 0, resource: { buffer: this.uniformBuffer, size: 16 * 4, offset: 256 } }]
+            entries: [{ binding: 0, resource: { buffer: this.uniformBuffer, size: 16 * 4, offset: 0 } }]
         })
 
         const pipelineDesc: GPURenderPipelineDescriptor = {
@@ -521,7 +474,7 @@ class Renderer {
         let modelViewMat: mat4 = mat4.create();
 
         mat4.lookAt(cameraMatrix, [0, 0, 1], [0, 0, 0], [0, 1, 0]);
-        mat4.translate(modelMatrix, modelMatrix, [-4.0, 0.0, -5.0]);
+        mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, -5.0]);
         const now = Date.now() / 1000;
         mat4.rotateY(
             modelMatrix,
@@ -553,33 +506,6 @@ class Renderer {
             0,
             this.canvas.width,
             this.canvas.height);
-
-        this.passEncoder.setVertexBuffer(0, this.positionBufferTriangle);
-        this.passEncoder.setVertexBuffer(1, this.colorBufferTriangle);
-        this.passEncoder.setBindGroup(0, this.viewParamBGTriangle);
-
-        this.passEncoder.draw(12, 1, 0);
-
-
-        // For Cube
-        // Update camera buffer
-        cameraMatrix = mat4.create();
-        modelMatrix = mat4.create();
-        modelViewMat = mat4.create();
-        mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, -6.0]);
-
-        mat4.rotate(
-            modelMatrix,
-            modelMatrix, 1,
-            [Math.sin(now), Math.cos(now), 0]
-        );
-        mat4.mul(modelViewMat, modelMatrix, cameraMatrix);
-
-
-        mat4.mul(this.projView, this.proj, modelViewMat);
-
-
-        this.device.queue.writeBuffer(this.uniformBuffer, 256, this.projView);
 
         // this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
         this.passEncoder.setVertexBuffer(0, this.positionBufferSquare);
