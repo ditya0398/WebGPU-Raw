@@ -506,10 +506,9 @@ class Renderer{
       mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
       mat4.translate(modelMatrix,modelMatrix,[-4.0,0.0,-5.0]);
       const now = Date.now() / 1000;
-       mat4.rotate(
+       mat4.rotateY(
            modelMatrix,
-           modelMatrix, 1,
-         [Math.sin(now), Math.cos(now), 0]
+           modelMatrix, now
        );
        mat4.mul(modelViewMat, modelMatrix, cameraMatrix);
        
