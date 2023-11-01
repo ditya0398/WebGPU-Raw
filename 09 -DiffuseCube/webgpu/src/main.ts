@@ -125,14 +125,15 @@ class Renderer {
 
 
     declare proj: mat4;
-    declare projView: mat4;
     declare viewParamBGSquare: GPUBindGroup;
-    declare uniformBuffer: GPUBuffer;
+    declare uniformBufferProjection: GPUBuffer;
+    declare uniformBufferModelView: GPUBuffer;
     declare bFullscreen: boolean;
     
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
-        this.toggleFullscreen(this.canvas);
+        if(this.canvas)
+            this.toggleFullscreen(this.canvas);
     }
 
     toggleFullscreen(canvas: HTMLCanvasElement) {
@@ -375,7 +376,8 @@ class Renderer {
 
         //Bind Group Layouts
         var bindGroupLayout = this.device.createBindGroupLayout({
-            entries: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform' } }]
+            entries: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform' } },
+                      { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}} ]
         });
 
 
@@ -385,16 +387,21 @@ class Renderer {
 
 
         //creating the uniform buffer
-        this.uniformBuffer = this.device.createBuffer({
-            size: (16 * 4) + 256,
+        this.uniformBufferProjection = this.device.createBuffer({
+            size: (16 * 4),
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
 
+        this.uniformBufferModelView = this.device.createBuffer({
+            size: (16 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
         // Create a bind group which places our view params buffer at binding 0
        
         this.viewParamBGSquare = this.device.createBindGroup({
             layout: bindGroupLayout,
-            entries: [{ binding: 0, resource: { buffer: this.uniformBuffer, size: 16 * 4, offset: 0 } }]
+            entries: [{ binding: 0, resource: { buffer: this.uniformBufferProjection, size: 16 * 4, offset: 0 }},
+                      { binding: 1, resource: { buffer: this.uniformBufferModelView, size: 16 * 4, offset: 0}}]
         })
 
         const pipelineDesc: GPURenderPipelineDescriptor = {
@@ -411,7 +418,7 @@ class Renderer {
 
         this.proj = mat4.perspective(
             mat4.create(), 100 * Math.PI / 180.0, this.canvas.width / this.canvas.height, 0.1, 100);
-        this.projView = mat4.create();
+        
     }
 
     resizeBackings() {
@@ -484,9 +491,12 @@ class Renderer {
 
 
         mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
-        this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
+       // this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
 
-        this.device.queue.writeBuffer(this.uniformBuffer, 0, this.projView);
+        this.device.queue.writeBuffer(this.uniformBufferProjection, 0, this.proj);  
+
+        this.device.queue.writeBuffer(this.uniformBufferModelView, 0, modelViewMat);
+
 
         this.commandEncoder = this.device.createCommandEncoder();
 
@@ -507,7 +517,7 @@ class Renderer {
             this.canvas.width,
             this.canvas.height);
 
-        // this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
+       
         this.passEncoder.setVertexBuffer(0, this.positionBufferSquare);
         this.passEncoder.setVertexBuffer(1, this.colorBufferSquare);
         this.passEncoder.setBindGroup(0, this.viewParamBGSquare);
