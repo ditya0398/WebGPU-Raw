@@ -24,6 +24,25 @@ const colorSquare = new Float32Array([
 ]);
 
 
+//Define the position for the Triangle which will be passed to the Shader
+const positionTriangle= new Float32Array([
+    1.0,-1.0,0.0,
+    -1.0,-1.0,0.0,
+    0.0,1.0,0.0
+]);
+
+//Define the Color data
+const colorTriangle = new Float32Array([
+    1.0,
+    0.0,
+    0.0, // 🔴
+    0.0,
+    1.0,
+    0.0, // 🟢
+    0.0,
+    0.0,
+    1.0 // 🔵
+]);
 class Renderer{
   declare canvas: HTMLCanvasElement;
 
@@ -32,8 +51,11 @@ class Renderer{
   declare queue: GPUQueue;
   
   //Resources which needs to be passed to the GPU 
-  declare positionBuffer: GPUBuffer;
-  declare colorBuffer: GPUBuffer;
+  declare positionBufferTriangle: GPUBuffer;
+  declare colorBufferTriangle: GPUBuffer;
+  declare positionBufferSquare: GPUBuffer;
+  declare colorBufferSquare: GPUBuffer;
+
   
   //Shader Modules
   declare vertModule: GPUShaderModule;
@@ -54,8 +76,9 @@ class Renderer{
   
   declare proj: mat4; 
   declare projView: mat4;
-  declare viewParamBG: GPUBindGroup;
-  declare viewParamsBuffer:GPUBuffer;
+  declare viewParamBGTriangle: GPUBindGroup;
+  declare viewParamBGSquare: GPUBindGroup;
+  declare uniformBuffer:GPUBuffer;
 
   constructor(canvas: HTMLCanvasElement){
       this.canvas = canvas;
@@ -202,8 +225,10 @@ class Renderer{
   async initializeResources()
   {
       // Create the BUFFERS on the GPU 
-      this.positionBuffer = this.createBuffer(positionSquare, GPUBufferUsage.VERTEX);
-      this.colorBuffer = this.createBuffer(colorSquare, GPUBufferUsage.VERTEX);
+      this.positionBufferTriangle = this.createBuffer(positionTriangle, GPUBufferUsage.VERTEX);
+      this.colorBufferTriangle = this.createBuffer(colorTriangle, GPUBufferUsage.VERTEX);
+      this.positionBufferSquare = this.createBuffer(positionSquare, GPUBufferUsage.VERTEX);
+      this.colorBufferSquare= this.createBuffer(colorSquare, GPUBufferUsage.VERTEX);
       
       //Initializing the SHADERS
       const vsmDesc = {
@@ -294,17 +319,20 @@ class Renderer{
 
       
         //creating the uniform buffer
-        this.viewParamsBuffer = this.device.createBuffer({
-            size: 16*4,
+        this.uniformBuffer = this.device.createBuffer({
+            size: (16*4) + 256,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
 
         // Create a bind group which places our view params buffer at binding 0
-         this.viewParamBG = this.device.createBindGroup({
+         this.viewParamBGTriangle = this.device.createBindGroup({
             layout: bindGroupLayout,
-            entries: [{binding: 0, resource: {buffer: this.viewParamsBuffer}}]
+            entries: [{binding: 0, resource: {buffer: this.uniformBuffer, size: 16 * 4, offset: 0}}]
         });
-
+        this.viewParamBGSquare = this.device.createBindGroup({
+            layout: bindGroupLayout,
+            entries: [{binding: 0, resource: {buffer: this.uniformBuffer, size: 16 * 4, offset: 256 }}]
+        })
 
       const pipelineDesc: GPURenderPipelineDescriptor = {
           layout,
@@ -385,21 +413,21 @@ class Renderer{
       let modelViewMat: mat4 = mat4.create();
 
       var camera = mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
-      mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,-2.0]);
+      mat4.translate(modelMatrix,modelMatrix,[-3.0,0.0,-2.0]);
       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
       this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
 
-      var upload = this.device.createBuffer(
-          {size: 16 * 4, usage: GPUBufferUsage.COPY_SRC, mappedAtCreation: true});
-      {
-          var map = new Float32Array(upload.getMappedRange());
-          map.set(this.projView);
-          upload.unmap();
-      }
-
+    //   var upload = this.device.createBuffer(
+    //       {size: 16 * 4, usage: GPUBufferUsage.COPY_SRC, mappedAtCreation: true});
+    //   {
+    //       var map = new Float32Array(upload.getMappedRange());
+    //       map.set(this.projView);
+    //       upload.unmap();
+    //   }
+     this.device.queue.writeBuffer(this.uniformBuffer,0,this.projView);
 
       this.commandEncoder = this.device.createCommandEncoder();
-        this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
+      //this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
       //Encode drawing commands
       this.passEncoder = this.commandEncoder.beginRenderPass(renderPassDesc);
       this.passEncoder.setPipeline(this.pipeline);
@@ -417,15 +445,41 @@ class Renderer{
           this.canvas.width,
           this.canvas.height);
 
-      this.passEncoder.setVertexBuffer(0,this.positionBuffer);
-      this.passEncoder.setVertexBuffer(1,this.colorBuffer);
-      this.passEncoder.setBindGroup(0, this.viewParamBG);
+      this.passEncoder.setVertexBuffer(0,this.positionBufferTriangle);
+      this.passEncoder.setVertexBuffer(1,this.colorBufferTriangle);
+      this.passEncoder.setBindGroup(0, this.viewParamBGTriangle);
+      
+      this.passEncoder.draw(3,1,0);
+
+
+      // For Square
+       // Update camera buffer
+      
+       cameraMatrix = mat4.create();
+       modelMatrix = mat4.create();
+       modelViewMat = mat4.create();
+       mat4.translate(modelMatrix,modelMatrix,[2.0,0.0,-2.0]);
+       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
+       mat4.mul(this.projView, this.proj, modelViewMat);
+   
+       this.device.queue.writeBuffer(this.uniformBuffer, 256 ,this.projView);
+
+      // this.commandEncoder.copyBufferToBuffer(upload, 0, this.viewParamsBuffer, 0, 16 * 4);
+      this.passEncoder.setVertexBuffer(0,this.positionBufferSquare);
+      this.passEncoder.setVertexBuffer(1,this.colorBufferSquare);
+      this.passEncoder.setBindGroup(0, this.viewParamBGSquare);
       
       this.passEncoder.draw(6,1,0);
+
+
+
+
       this.passEncoder.end();
 
       this.queue.submit([this.commandEncoder.finish()]);
   }
+
+
 
   render = () => {
     //Aquire next image from context
