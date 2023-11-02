@@ -107,6 +107,7 @@ class Renderer {
     declare colorBufferSquare: GPUBuffer;
 
 
+    
     //Shader Modules
     declare vertModule: GPUShaderModule;
     declare fragModule: GPUShaderModule;
