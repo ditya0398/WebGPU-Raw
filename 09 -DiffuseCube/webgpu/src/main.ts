@@ -102,6 +102,7 @@ class Renderer {
     declare device: GPUDevice;
     declare queue: GPUQueue;
 
+    
     //Resources which needs to be passed to the GPU 
     declare positionBufferSquare: GPUBuffer;
     declare colorBufferSquare: GPUBuffer;
