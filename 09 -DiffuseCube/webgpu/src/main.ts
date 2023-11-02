@@ -132,8 +132,8 @@ class Renderer {
     
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
-        if(this.canvas)
-            this.toggleFullscreen(this.canvas);
+        // if(this.canvas)
+        //     this.toggleFullscreen(this.canvas);
     }
 
     toggleFullscreen(canvas: HTMLCanvasElement) {
