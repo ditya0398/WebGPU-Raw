@@ -1,98 +1,113 @@
 import vertShaderCode from './shaders/triangle.vert.wgsl?raw';
 import fragShaderCode from './shaders/triangle.frag.wgsl?raw';
 import { mat4 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 
 //Define the position for the Triangle which will be passed to the Shader
 const verticesCube = new Float32Array([
-    -1.0, 1.0, -1.0, //le t top
-    1.0, 1.0, -1.0, //right top
-    -1.0, -1.0, -1.0, //le t bottom
-    -1.0, -1.0, -1.0, //le t bottom o  2nd triangle
-    1.0, 1.0, -1.0, //right top o  2nd triangle
-    1.0, -1.0, -1.0, //right bottom o  2nd triangle
-    //right side
-    1.0, 1.0, -1.0, //right top
-    1.0, 1.0, 1.0, //le t top
-    1.0, -1.0, -1.0, //le t bottom
-    1.0, -1.0, -1.0, //le t bottom o  2nd triangle		
-    1.0, 1.0, 1.0, //right top o  2nd triangle		
-    1.0, -1.0, 1.0, //right bottom o  2nd triangle
-    //Back
-    -1.0, 1.0, 1.0, //le t top
-    1.0, 1.0, 1.0, //right top
-    -1.0, -1.0, 1.0, //le t bottom
-    -1.0, -1.0, 1.0, //le t bottom o  2nd triangle
-    1.0, 1.0, 1.0, //right top o  2nd triangle
-    1.0, -1.0, 1.0, //right bottom o  2nd triangle
-    //Le t side
-    -1.0, 1.0, -1.0, //right top
-    -1.0, 1.0, 1.0, //le t top
-    -1.0, -1.0, -1.0, //le t bottom
-    -1.0, -1.0, -1.0, //le t bottom o  2nd triangle		
-    -1.0, 1.0, 1.0, //right top o  2nd triangle		
-    -1.0, -1.0, 1.0, //right bottom o  2nd triangle
-    //Top
-    -1.0, 1.0, 1.0, //le t top
-    1.0, 1.0, 1.0, //right top
-    -1.0, 1.0, -1.0, //le t bottom
-    -1.0, 1.0, -1.0, //le t bottom o  2nd triangle		
-    1.0, 1.0, 1.0, //right top o  2nd triangle		
-    1.0, 1.0, -1.0, //right bottom o  2nd triangle
-    //Bottom
-    -1.0, -1.0, 1.0, //le t top
-    1.0, -1.0, 1.0, //right top
-    -1.0, -1.0, -1.0, //le t bottom
-    -1.0, -1.0, -1.0, //le t bottom o  2nd triangle		
-    1.0, -1.0, 1.0, //right top o  2nd triangle		
-    1.0, -1.0, -1.0, //right bottom of 2nd triangle
+    -1.0, +1.0, +1.0,
+		+1.0, +1.0, +1.0,
+		-1.0, +1.0, -1.0,
+		-1.0, +1.0, -1.0,
+		+1.0, +1.0, +1.0,
+		+1.0, +1.0, -1.0,
 
+
+		+1.0, -1.0, -1.0,
+		+1.0, -1.0, +1.0,
+		-1.0, -1.0, -1.0,
+		-1.0, -1.0, -1.0,
+		+1.0, -1.0, +1.0,
+		-1.0, -1.0, +1.0,
+
+		-1.0, +1.0, -1.0,
+		+1.0, +1.0, -1.0,
+		-1.0, -1.0, -1.0,
+		-1.0, -1.0, -1.0,
+		+1.0, +1.0, -1.0,
+		+1.0, -1.0, -1.0,
+
+		+1.0, -1.0, +1.0,
+		+1.0, +1.0, +1.0,
+		-1.0, -1.0, +1.0,
+		-1.0, -1.0, +1.0,
+		+1.0, +1.0, +1.0,
+		-1.0, +1.0, +1.0,
+
+		// SIDE 5 ( LEFT )
+		-1.0, +1.0, +1.0,
+		-1.0, +1.0, -1.0,
+		-1.0, -1.0, +1.0,
+
+		-1.0, -1.0, +1.0,
+		-1.0, +1.0, -1.0,
+		-1.0, -1.0, -1.0,
+
+		// SIDE 6 ( RIGHT )
+		+1.0, -1.0, -1.0,
+		+1.0, +1.0, -1.0,
+		+1.0, -1.0, +1.0,
+
+		+1.0, -1.0, +1.0,
+		+1.0, +1.0, -1.0,
+		+1.0, +1.0, +1.0,
 ]);
 
 //Define the Color data
-const colorCube = new Float32Array([
-    //Front face color
-    0.0, 1.0, 1.0,//corn  lower color
-    0.0, 1.0, 1.0,//corn  lower color
-    0.0, 1.0, 1.0,//corn  lower color
-    0.0, 1.0, 1.0,//corn  lower color
-    0.0, 1.0, 1.0,//corn  lower color
-    0.0, 1.0, 1.0,//corn  lower color
-    //Right  ace color
-    0.0, 1.0, 0.0,//green color
-    0.0, 1.0, 0.0,//green color
-    0.0, 1.0, 0.0,//green color
-    0.0, 1.0, 0.0,//green color
-    0.0, 1.0, 0.0,//green color
-    0.0, 1.0, 0.0,//green color
-    //Back  ace color
-    1.0, 0.0, 0.0,//red color
-    1.0, 0.0, 0.0,//red color
-    1.0, 0.0, 0.0,//red color
-    1.0, 0.0, 0.0,//red color
-    1.0, 0.0, 0.0,//red color
-    1.0, 0.0, 0.0,//red color
-    //Le t  ace color
-    1.0, 1.0, 0.0,//Yellow color
-    1.0, 1.0, 0.0,//Yellow color
-    1.0, 1.0, 0.0,//Yellow color
-    1.0, 1.0, 0.0,//Yellow color
-    1.0, 1.0, 0.0,//Yellow color
-    1.0, 1.0, 0.0,//Yellow color
-    //Top  ace color
-    1.0, 0.0, 1.0,//green color
-    1.0, 0.0, 1.0,//green color
-    1.0, 0.0, 1.0,//green color
-    1.0, 0.0, 1.0,//green color
-    1.0, 0.0, 1.0,//green color
-    1.0, 0.0, 1.0,//green color
-    //Bottom  ace color
-    1.0, 0.5, 0.0,//Orange color
-    1.0, 0.5, 0.0,//Orange color
-    1.0, 0.5, 0.0,//Orange color
-    1.0, 0.5, 0.0,//Orange color
-    1.0, 0.5, 0.0,//Orange color
-    1.0, 0.5, 0.0,//Orange color
+const normalCube = new Float32Array([
+   //top
+		+0.0, +1.0, +0.0,
+		+0.0, +1.0, +0.0,
+		+0.0, +1.0, +0.0,
 
+		+0.0, +1.0, +0.0,
+		+0.0, +1.0, +0.0,
+		+0.0, +1.0, +0.0,
+
+		//bottom
+		+0.0, -1.0, +0.0,
+		+0.0, -1.0, +0.0,
+		+0.0, -1.0, +0.0,
+
+		+0.0, -1.0, +0.0,
+		+0.0, -1.0, +0.0,
+		+0.0, -1.0, +0.0,
+
+		//ront
+        +0.0, +0.0, -1.0,
+		+0.0, +0.0, -1.0,
+		+0.0, +0.0, -1.0,
+
+		+0.0, +0.0, -1.0,
+		+0.0, +0.0, -1.0,
+		+0.0, +0.0, -1.0,
+
+		//back
+        +0.0, +0.0, +1.0,
+		+0.0, +0.0, +1.0,
+		+0.0, +0.0, +1.0,
+
+		+0.0, +0.0, +1.0,
+		+0.0, +0.0, +1.0,
+		+0.0, +0.0, +1.0,
+
+		//let
+		-1.0, +0.0, +0.0,
+		-1.0, +0.0, +0.0,
+		-1.0, +0.0, +0.0,
+
+		-1.0, +0.0, +0.0,
+		-1.0, +0.0, +0.0,
+		-1.0, +0.0, +0.0,
+
+		//right
+		+1.0, +0.0, +0.0,
+		+1.0, +0.0, +0.0,
+		+1.0, +0.0, +0.0,
+
+		+1.0, +0.0, +0.0,
+		+1.0, +0.0, +0.0,
+		+1.0, +0.0, +0.0,
 ]);
 
 class Renderer {
@@ -102,10 +117,10 @@ class Renderer {
     declare device: GPUDevice;
     declare queue: GPUQueue;
 
-    
+
     //Resources which needs to be passed to the GPU 
-    declare positionBufferSquare: GPUBuffer;
-    declare colorBufferSquare: GPUBuffer;
+    declare positionBufferCube: GPUBuffer;
+    declare normalBufferCube: GPUBuffer;
 
     
     //Shader Modules
@@ -126,9 +141,12 @@ class Renderer {
 
 
     declare proj: mat4;
-    declare viewParamBGSquare: GPUBindGroup;
+    declare viewParamBGCube: GPUBindGroup;
     declare uniformBufferProjection: GPUBuffer;
     declare uniformBufferModelView: GPUBuffer;
+    declare uniformBufferLightPosition: GPUBuffer;
+    declare uniformBufferLightLD: GPUBuffer;
+    declare uniformBufferLightKD: GPUBuffer;
     declare bFullscreen: boolean;
     
     constructor(canvas: HTMLCanvasElement) {
@@ -295,8 +313,8 @@ class Renderer {
 
     async initializeResources() {
         // Create the BUFFERS on the GPU 
-        this.positionBufferSquare = this.createBuffer(verticesCube, GPUBufferUsage.VERTEX);
-        this.colorBufferSquare = this.createBuffer(colorCube, GPUBufferUsage.VERTEX);
+        this.positionBufferCube = this.createBuffer(verticesCube, GPUBufferUsage.VERTEX);
+        this.normalBufferCube = this.createBuffer(normalCube, GPUBufferUsage.VERTEX);
 
         //Initializing the SHADERS
         const vsmDesc = {
@@ -317,8 +335,6 @@ class Renderer {
         compilationInfo = await this.fragModule.getCompilationInfo();
         this.getShaderCompilationStatus(compilationInfo, "Fragment Shader");
 
-
-
         //Input Assembly
         const positionAttribDesc: GPUVertexAttribute = {
             shaderLocation: 0,
@@ -326,7 +342,7 @@ class Renderer {
             format: 'float32x3'
         };
 
-        const colorAttribDesc: GPUVertexAttribute = {
+        const normalAttribDesc: GPUVertexAttribute = {
             shaderLocation: 1,
             offset: 0,
             format: 'float32x3'
@@ -338,8 +354,8 @@ class Renderer {
             stepMode: 'vertex'
         };
 
-        const colorBufferDesc: GPUVertexBufferLayout = {
-            attributes: [colorAttribDesc],
+        const normalBufferDesc: GPUVertexBufferLayout = {
+            attributes: [normalAttribDesc],
             arrayStride: 4 * 3,
             stepMode: 'vertex'
         };
@@ -354,7 +370,7 @@ class Renderer {
         const vertex: GPUVertexState = {
             module: this.vertModule,
             entryPoint: 'main',
-            buffers: [positionBufferDesc, colorBufferDesc]
+            buffers: [positionBufferDesc, normalBufferDesc]
         };
 
         const colorState: GPUColorTargetState = {
@@ -378,7 +394,10 @@ class Renderer {
         //Bind Group Layouts
         var bindGroupLayout = this.device.createBindGroupLayout({
             entries: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform' } },
-                      { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}} ]
+                      { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
+                      { binding: 2, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
+                      { binding: 3, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
+                      { binding: 4, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}} ]
         });
 
 
@@ -397,12 +416,28 @@ class Renderer {
             size: (16 * 4),
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
+
+        this.uniformBufferLightPosition = this.device.createBuffer({
+            size: (3 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+        this.uniformBufferLightLD = this.device.createBuffer({
+            size: (3 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+        this.uniformBufferLightKD = this.device.createBuffer({
+            size: (3 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
         // Create a bind group which places our view params buffer at binding 0
        
-        this.viewParamBGSquare = this.device.createBindGroup({
+        this.viewParamBGCube = this.device.createBindGroup({
             layout: bindGroupLayout,
             entries: [{ binding: 0, resource: { buffer: this.uniformBufferProjection, size: 16 * 4, offset: 0 }},
-                      { binding: 1, resource: { buffer: this.uniformBufferModelView, size: 16 * 4, offset: 0}}]
+                      { binding: 1, resource: { buffer: this.uniformBufferModelView, size: 16 * 4, offset: 0}},
+                      { binding: 2, resource: { buffer: this.uniformBufferLightPosition, size: 3 * 4, offset: 0}},
+                      { binding: 3, resource: { buffer: this.uniformBufferLightLD, size: 3 * 4, offset: 0}},
+                      { binding: 4, resource: { buffer: this.uniformBufferLightKD, size: 3 * 4, offset: 0}}]
         })
 
         const pipelineDesc: GPURenderPipelineDescriptor = {
@@ -482,9 +517,13 @@ class Renderer {
         let modelViewMat: mat4 = mat4.create();
 
         mat4.lookAt(cameraMatrix, [0, 0, 1], [0, 0, 0], [0, 1, 0]);
-        mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, -5.0]);
+        mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, -3.0]);
         const now = Date.now() / 1000;
         mat4.rotateY(
+            modelMatrix,
+            modelMatrix, now
+        );
+        mat4.rotateX(
             modelMatrix,
             modelMatrix, now
         );
@@ -492,13 +531,28 @@ class Renderer {
 
 
         mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
+        let lightPos: vec3 = vec3.create();
+        vec3.set(lightPos, 0.0,0.0,2.0);
+
+        let LD: vec3 = vec3.create();
+        vec3.set(LD, 1.0,1.0,1.0);
+
+        let KD: vec3 = vec3.create();
+        vec3.set(KD, 0.1,0.1,0.1);
+
+
        // this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
 
         this.device.queue.writeBuffer(this.uniformBufferProjection, 0, this.proj);  
 
         this.device.queue.writeBuffer(this.uniformBufferModelView, 0, modelViewMat);
 
+        this.device.queue.writeBuffer(this.uniformBufferLightPosition, 0, lightPos);
 
+        this.device.queue.writeBuffer(this.uniformBufferLightLD, 0, LD);
+
+        this.device.queue.writeBuffer(this.uniformBufferLightKD, 0, KD);
+ 
         this.commandEncoder = this.device.createCommandEncoder();
 
         //Encode drawing commands
@@ -519,9 +573,9 @@ class Renderer {
             this.canvas.height);
 
        
-        this.passEncoder.setVertexBuffer(0, this.positionBufferSquare);
-        this.passEncoder.setVertexBuffer(1, this.colorBufferSquare);
-        this.passEncoder.setBindGroup(0, this.viewParamBGSquare);
+        this.passEncoder.setVertexBuffer(0, this.positionBufferCube);
+        this.passEncoder.setVertexBuffer(1, this.normalBufferCube);
+        this.passEncoder.setBindGroup(0, this.viewParamBGCube);
 
         this.passEncoder.draw(36, 1, 0);
 
