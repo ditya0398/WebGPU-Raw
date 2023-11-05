@@ -43,6 +43,11 @@ class Renderer {
     declare uniformBufferLightPosition: GPUBuffer;
     declare uniformBufferLightLD: GPUBuffer;
     declare uniformBufferLightKD: GPUBuffer;
+    declare uniformBufferLightLA: GPUBuffer;
+    declare uniformBufferLightKA: GPUBuffer;
+    declare uniformBufferLightLS: GPUBuffer;
+    declare uniformBufferLightKS: GPUBuffer;
+    declare uniformBufferMaterialShininess: GPUBuffer;
     declare bFullscreen: boolean;
     declare sphere: Sphere;
 
@@ -296,7 +301,12 @@ class Renderer {
                       { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
                       { binding: 2, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
                       { binding: 3, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
-                      { binding: 4, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}} ]
+                      { binding: 4, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
+                      { binding: 5, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
+                      { binding: 6, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
+                      { binding: 7, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
+                      { binding: 8, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
+                      { binding: 9, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}} ]
         });
 
 
@@ -328,6 +338,26 @@ class Renderer {
             size: (3 * 4),
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
+        this.uniformBufferLightLA = this.device.createBuffer({
+            size: (3 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+        this.uniformBufferLightKA = this.device.createBuffer({
+            size: (3 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+        this.uniformBufferLightLS = this.device.createBuffer({
+            size: (3 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+        this.uniformBufferLightKS = this.device.createBuffer({
+            size: (3 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+        this.uniformBufferMaterialShininess = this.device.createBuffer({
+            size: (1 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
         // Create a bind group which places our view params buffer at binding 0
        
         this.viewParamBGSphere = this.device.createBindGroup({
@@ -336,7 +366,12 @@ class Renderer {
                       { binding: 1, resource: { buffer: this.uniformBufferModelView, size: 16 * 4, offset: 0}},
                       { binding: 2, resource: { buffer: this.uniformBufferLightPosition, size: 3 * 4, offset: 0}},
                       { binding: 3, resource: { buffer: this.uniformBufferLightLD, size: 3 * 4, offset: 0}},
-                      { binding: 4, resource: { buffer: this.uniformBufferLightKD, size: 3 * 4, offset: 0}}]
+                      { binding: 4, resource: { buffer: this.uniformBufferLightKD, size: 3 * 4, offset: 0}},
+                      { binding: 5, resource: { buffer: this.uniformBufferLightLA, size: 3 * 4, offset: 0}},
+                      { binding: 6, resource: { buffer: this.uniformBufferLightKA, size: 3 * 4, offset: 0}},
+                      { binding: 7, resource: { buffer: this.uniformBufferLightLS, size: 3 * 4, offset: 0}},
+                      { binding: 8, resource: { buffer: this.uniformBufferLightKS, size: 3 * 4, offset: 0}},
+                      { binding: 9, resource: { buffer: this.uniformBufferMaterialShininess, size: 1 * 4, offset: 0}}]
         })
 
         const pipelineDesc: GPURenderPipelineDescriptor = {
@@ -416,28 +451,40 @@ class Renderer {
         let modelViewMat: mat4 = mat4.create();
 
         mat4.lookAt(cameraMatrix, [0, 0, 1], [0, 0, 0], [0, 1, 0]);
-        mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, -3.0]);
-        const now = Date.now() / 1000;
-        mat4.rotateY(
-            modelMatrix,
-            modelMatrix, now
-        );
-        mat4.rotateX(
-            modelMatrix,
-            modelMatrix, now
-        );
+        mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, -1.0]);
+        //const now = Date.now() / 1000;
+        // mat4.rotateY(
+        //     modelMatrix,
+        //     modelMatrix, now
+        // );
+        // mat4.rotateX(
+        //     modelMatrix,
+        //     modelMatrix, now
+        // );
         mat4.mul(modelViewMat, modelMatrix, cameraMatrix);
 
 
         mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
         let lightPos: vec3 = vec3.create();
-        vec3.set(lightPos, 0.0,0.0,2.0);
+        vec3.set(lightPos, 100.0,100.0,100.0,2.0);
 
         let LD: vec3 = vec3.create();
         vec3.set(LD, 1.0,1.0,1.0);
 
         let KD: vec3 = vec3.create();
-        vec3.set(KD, 0.1,0.1,0.1);
+        vec3.set(KD, 1.0,1.0,1.0);
+        
+        let LA: vec3 = vec3.create();
+        vec3.set(LA, 0.0,0.0,0.0);
+
+        let KA: vec3 = vec3.create();
+        vec3.set(KA, 0.0,0.0,0.0);
+
+        let LS: vec3 = vec3.create();
+        vec3.set(LS, 1.0,1.0,1.0);
+
+        let KS: vec3 = vec3.create();
+        vec3.set(KS, 1.0,1.0,1.0);
 
 
        // this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
@@ -451,6 +498,17 @@ class Renderer {
         this.device.queue.writeBuffer(this.uniformBufferLightLD, 0, LD);
 
         this.device.queue.writeBuffer(this.uniformBufferLightKD, 0, KD);
+
+        this.device.queue.writeBuffer(this.uniformBufferLightLA, 0, LA);
+
+        this.device.queue.writeBuffer(this.uniformBufferLightKA, 0, KA);
+
+        this.device.queue.writeBuffer(this.uniformBufferLightLS, 0, LS);
+
+        this.device.queue.writeBuffer(this.uniformBufferLightKS, 0, KS);
+
+        const shininess = new Float32Array([128.0])
+        this.device.queue.writeBuffer(this.uniformBufferMaterialShininess, 0,shininess);
  
         this.commandEncoder = this.device.createCommandEncoder();
 
