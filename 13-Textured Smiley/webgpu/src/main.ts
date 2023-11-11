@@ -23,6 +23,17 @@ const colorSquare = new Float32Array([
    0.0 , 1.0 , 1.0 ,//corn  lower color
 ]);
 
+const texCoords = new Float32Array([
+    +0.0, +0.0,
+    +0.0, +1.0,
+    +1.0, +0.0,
+
+    // triangle 2
+    +1.0, +0.0,
+    +0.0, +1.0,
+    +1.0, +1.0,
+]);
+
 
 class Renderer{
   declare canvas: HTMLCanvasElement;
@@ -55,7 +66,14 @@ class Renderer{
   declare proj: mat4; 
   declare projView: mat4;
   declare viewParamBG: GPUBindGroup;
-  declare viewParamsBuffer:GPUBuffer;
+  declare viewParamsBuffer: GPUBuffer;
+ 
+  //variable for textures
+  declare texturebuffer: GPUBuffer;
+  declare texture: GPUTexture;
+  declare textureView: GPUTextureView;
+  declare sampler: GPUSampler;
+
 
   constructor(canvas: HTMLCanvasElement){
       this.canvas = canvas;
@@ -204,7 +222,7 @@ class Renderer{
       // Create the BUFFERS on the GPU 
       this.positionBuffer = this.createBuffer(positionSquare, GPUBufferUsage.VERTEX);
       this.colorBuffer = this.createBuffer(colorSquare, GPUBufferUsage.VERTEX);
-      
+      this.texturebuffer = this.createBuffer(texCoords, GPUBufferUsage.VERTEX);
       //Initializing the SHADERS
       const vsmDesc = {
           code: vertShaderCode
@@ -239,6 +257,12 @@ class Renderer{
           format: 'float32x3'
       }; 
 
+      const textureAttribDesc: GPUVertexAttribute = {
+        shaderLocation: 2,
+        offset: 0,
+        format: 'float32x2'
+    }; 
+
       const positionBufferDesc: GPUVertexBufferLayout = {
           attributes: [positionAttribDesc],
           arrayStride: 4 * 3, //sizeof(float) * 3
@@ -250,6 +274,11 @@ class Renderer{
           arrayStride: 4 * 3,
           stepMode: 'vertex'
       };
+      const textureBufferDesc: GPUVertexBufferLayout = {
+        attributes: [textureAttribDesc],
+        arrayStride: 4 * 2,
+        stepMode: 'vertex'
+    };
 
       const depthStencil: GPUDepthStencilState = {
           depthWriteEnabled: true,
@@ -261,7 +290,7 @@ class Renderer{
       const vertex: GPUVertexState = {
           module: this.vertModule,
           entryPoint: 'main',
-          buffers: [positionBufferDesc, colorBufferDesc]
+          buffers: [positionBufferDesc, colorBufferDesc, textureBufferDesc]
       };
 
       const colorState: GPUColorTargetState = {
@@ -281,10 +310,43 @@ class Renderer{
           topology: 'triangle-list'
       }
 
+
+      //Let's create the texture here
+          
+      const response = await fetch('./smiley.png');
+      const imageBitmap = await createImageBitmap(await response.blob());
+  
+      this.texture = this.device.createTexture({
+        size: [imageBitmap.width, imageBitmap.height, 1],
+        format: 'rgba8unorm',
+        usage:
+          GPUTextureUsage.TEXTURE_BINDING |
+          GPUTextureUsage.COPY_DST |
+          GPUTextureUsage.RENDER_ATTACHMENT,
+      });
+      this.device.queue.copyExternalImageToTexture(
+        { source: imageBitmap },
+        { texture: this.texture },
+        [imageBitmap.width, imageBitmap.height]
+      );
+    
+  
+    // Create a sampler with linear filtering for smooth interpolation.
+    this.sampler = this.device.createSampler({
+      magFilter: 'linear',
+      minFilter: 'linear',
+    });
+
+
+
+
+
      
       //Bind Group Layouts
       var bindGroupLayout = this.device.createBindGroupLayout({
-        entries: [{binding: 0, visibility: GPUShaderStage.VERTEX, buffer: {type: 'uniform'}}]
+        entries: [{binding: 0, visibility: GPUShaderStage.VERTEX, buffer: {type: 'uniform'}},
+                  {binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: {}},
+                  {binding: 2, visibility: GPUShaderStage.FRAGMENT, sampler: {}}]
       });
 
 
@@ -302,7 +364,9 @@ class Renderer{
         // Create a bind group which places our view params buffer at binding 0
          this.viewParamBG = this.device.createBindGroup({
             layout: bindGroupLayout,
-            entries: [{binding: 0, resource: {buffer: this.viewParamsBuffer}}]
+            entries: [{binding: 0, resource: {buffer: this.viewParamsBuffer}},
+                      {binding: 1, resource: this.texture.createView() },
+                      {binding: 2, resource: this.sampler}]
         });
 
 
@@ -354,7 +418,11 @@ class Renderer{
       this.depthTexture = this.device.createTexture(depthTextureDesc);
       this.depthTextureView = this.depthTexture.createView();
   }
-  
+  //function to convert degrees to radians
+  degToRad(value: any)
+  {
+    return value * 3.14 / 180.0;
+  }
   encodeCommands()
   {
       let colorAttachment: GPURenderPassColorAttachment = {
@@ -386,6 +454,8 @@ class Renderer{
 
       var camera = mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
       mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,-2.0]);
+      
+      mat4.rotateZ(modelMatrix, modelMatrix, this.degToRad(90.0));
       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
       this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
 
@@ -419,6 +489,7 @@ class Renderer{
 
       this.passEncoder.setVertexBuffer(0,this.positionBuffer);
       this.passEncoder.setVertexBuffer(1,this.colorBuffer);
+      this.passEncoder.setVertexBuffer(2, this.texturebuffer);
       this.passEncoder.setBindGroup(0, this.viewParamBG);
       
       this.passEncoder.draw(6,1,0);
