@@ -26,10 +26,21 @@ npm run dev
 
 ![Screenshot 2023-11-11 at 5 19 04 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/992767fa-cb2b-47fb-99b5-d2b3a0a4da7a)
 
-
 ## 3D Shapes
 
 ![Screenshot 2023-11-11 at 5 24 46 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/e086ee28-f3ff-425d-95ed-0a5bdb3177a8)
+
+## Textured Smiley
+
+![Screenshot 2023-11-11 at 5 28 47 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/cc9bd0e9-8c7f-40df-8a8c-e04b6b25329f)
+
+## Checkerboard (Procedural Texture)
+
+![Screenshot 2023-11-11 at 5 09 30 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/8276a0ac-dfe5-437b-8b0b-5a8fb98efd09)
+
+## 3D Shapes Textured
+
+![Screenshot 2023-11-11 at 6 41 50 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/5cfcb5ec-13d4-4a85-8e94-70053b2211cb)
 
 ## Diffuse Cube
 
@@ -50,19 +61,6 @@ npm run dev
 ## Three Moving Lights on a Steady Sphere
 
 ![Screenshot 2023-11-11 at 11 33 44 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/b770f394-05b3-4445-85c8-82451e8de1b1)
-
-## Textured Smiley
-
-![Screenshot 2023-11-11 at 5 28 47 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/cc9bd0e9-8c7f-40df-8a8c-e04b6b25329f)
-
-
-## Checkerboard (Procedural Texture)
-
-![Screenshot 2023-11-11 at 5 09 30 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/8276a0ac-dfe5-437b-8b0b-5a8fb98efd09)
-
-## 3D Shapes Textured
-
-![Screenshot 2023-11-11 at 6 41 50 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/5cfcb5ec-13d4-4a85-8e94-70053b2211cb)
 
 
 
