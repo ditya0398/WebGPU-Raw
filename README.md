@@ -56,4 +56,9 @@ npm run dev
 
 ![Screenshot 2023-11-11 at 5 09 30 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/8276a0ac-dfe5-437b-8b0b-5a8fb98efd09)
 
+## 3D Shapes Textured
+
+![Screenshot 2023-11-11 at 6 41 50 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/5cfcb5ec-13d4-4a85-8e94-70053b2211cb)
+
+
 
