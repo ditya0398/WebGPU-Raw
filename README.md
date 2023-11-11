@@ -1,6 +1,6 @@
-# WebGPU 
+# WebGPU (WIP)
 
-This repo defines my work using native WebGPU API 
+This repo defines my work in native WebGPU.
 
 ## Dependencies
 NodeJS
