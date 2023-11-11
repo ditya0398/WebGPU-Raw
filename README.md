@@ -47,6 +47,10 @@ npm run dev
 
 ![Screenshot 2023-11-11 at 3 06 06 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/b47f8647-acb6-4191-8336-c012831833e5)
 
+## Three Moving Lights on a Steady Sphere
+
+![Screenshot 2023-11-11 at 11 33 44 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/b770f394-05b3-4445-85c8-82451e8de1b1)
+
 ## Textured Smiley
 
 ![Screenshot 2023-11-11 at 5 28 47 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/cc9bd0e9-8c7f-40df-8a8c-e04b6b25329f)
