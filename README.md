@@ -12,7 +12,7 @@ npm install
 npm run dev
 ```
 
-##Screenshots (Output)
+ ## Screenshots (Output)
 
 # Beautiful Triangle!
 
