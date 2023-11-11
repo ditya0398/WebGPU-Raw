@@ -503,14 +503,14 @@ class Renderer{
       let modelMatrix: mat4 = mat4.create();
       let modelViewMat: mat4 = mat4.create();
 
-      mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
-      mat4.translate(modelMatrix,modelMatrix,[-4.0,0.0,-5.0]);
+      mat4.lookAt(cameraMatrix,[0,0,2],[0,0,0],[0,1,0]);
+      mat4.translate(modelMatrix,modelMatrix,[-2.0,0.0,-2.5]);
       const now = Date.now() / 1000;
        mat4.rotateY(
            modelMatrix,
            modelMatrix, now
        );
-       mat4.mul(modelViewMat, modelMatrix, cameraMatrix);
+       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
        
       
       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
@@ -549,14 +549,15 @@ class Renderer{
        cameraMatrix = mat4.create();
        modelMatrix = mat4.create();
        modelViewMat = mat4.create();
-       mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,-6.0]);
+       mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
+       mat4.translate(modelMatrix,modelMatrix,[2.0,0.0,-4.9]);
       
        mat4.rotate(
            modelMatrix,
            modelMatrix, 1,
          [Math.sin(now), Math.cos(now), 0]
        );
-       mat4.mul(modelViewMat, modelMatrix, cameraMatrix);
+       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
        
       
        mat4.mul(this.projView, this.proj, modelViewMat);

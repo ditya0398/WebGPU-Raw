@@ -412,8 +412,8 @@ class Renderer{
       let modelMatrix: mat4 = mat4.create();
       let modelViewMat: mat4 = mat4.create();
 
-      var camera = mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
-      mat4.translate(modelMatrix,modelMatrix,[-3.0,0.0,-2.0]);
+      var camera = mat4.lookAt(cameraMatrix,[0,0,0],[0,0,0],[0,1,0]);
+      mat4.translate(modelMatrix,modelMatrix,[-1.0,0.0,-2.0]);
       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
       this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
 
@@ -457,7 +457,8 @@ class Renderer{
        cameraMatrix = mat4.create();
        modelMatrix = mat4.create();
        modelViewMat = mat4.create();
-       mat4.translate(modelMatrix,modelMatrix,[2.0,0.0,-2.0]);
+       camera = mat4.lookAt(cameraMatrix,[0,0,0],[0,0,0],[0,1,0]);
+       mat4.translate(modelMatrix,modelMatrix,[2.0,0.0,-1.0]);
        mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
        mat4.mul(this.projView, this.proj, modelViewMat);
    
