@@ -1,5 +1,4 @@
 
-
 @group(0) @binding(3)
 var<uniform> u_LD: vec3f;
 

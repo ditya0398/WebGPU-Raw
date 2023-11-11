@@ -463,16 +463,17 @@ class Renderer {
         // );
         mat4.mul(modelViewMat, modelMatrix, cameraMatrix);
 
+        const now = Date.now() / 1000;
 
         mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
         let lightPos: vec3 = vec3.create();
-        vec3.set(lightPos, 100.0,100.0,100.0,2.0);
+        vec3.set(lightPos, Math.sin(now),Math.cos(now),0,1.0);
 
         let LD: vec3 = vec3.create();
-        vec3.set(LD, 1.0,1.0,1.0);
+        vec3.set(LD, 1.0,0.0,0.0);
 
         let KD: vec3 = vec3.create();
-        vec3.set(KD, 1.0,1.0,1.0);
+        vec3.set(KD, 1.0,0.0,0.0);
         
         let LA: vec3 = vec3.create();
         vec3.set(LA, 0.0,0.0,0.0);
