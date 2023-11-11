@@ -41,13 +41,9 @@ class Renderer {
     declare uniformBufferProjection: GPUBuffer;
     declare uniformBufferModelView: GPUBuffer;
     declare uniformBufferLightPosition: GPUBuffer;
-    declare uniformBufferLightLD: GPUBuffer;
-    declare uniformBufferLightKD: GPUBuffer;
-    declare uniformBufferLightLA: GPUBuffer;
-    declare uniformBufferLightKA: GPUBuffer;
-    declare uniformBufferLightLS: GPUBuffer;
-    declare uniformBufferLightKS: GPUBuffer;
-    declare uniformBufferMaterialShininess: GPUBuffer;
+    declare uniformBufferLight: GPUBuffer;
+    declare uniformBufferShininess: GPUBuffer;
+   
     declare bFullscreen: boolean;
     declare sphere: Sphere;
 
@@ -302,11 +298,7 @@ class Renderer {
                       { binding: 2, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
                       { binding: 3, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform'}},
                       { binding: 4, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform'}},
-                      { binding: 5, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform'}},
-                      { binding: 6, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform'}},
-                      { binding: 7, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform'}},
-                      { binding: 8, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform'}},
-                      { binding: 9, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform'}} ]
+                       ]
         });
 
 
@@ -330,34 +322,16 @@ class Renderer {
             size: (3 * 4),
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
-        this.uniformBufferLightLD = this.device.createBuffer({
-            size: (3 * 4),
+        this.uniformBufferLight = this.device.createBuffer({
+            size: (16 * 6),
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
-        this.uniformBufferLightKD = this.device.createBuffer({
-            size: (3 * 4),
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-        });
-        this.uniformBufferLightLA = this.device.createBuffer({
-            size: (3 * 4),
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-        });
-        this.uniformBufferLightKA = this.device.createBuffer({
-            size: (3 * 4),
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-        });
-        this.uniformBufferLightLS = this.device.createBuffer({
-            size: (3 * 4),
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-        });
-        this.uniformBufferLightKS = this.device.createBuffer({
-            size: (3 * 4),
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-        });
-        this.uniformBufferMaterialShininess = this.device.createBuffer({
+        this.uniformBufferShininess = this.device.createBuffer({
             size: (1 * 4),
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
+      
+          
         // Create a bind group which places our view params buffer at binding 0
        
         this.viewParamBGSphere = this.device.createBindGroup({
@@ -365,13 +339,9 @@ class Renderer {
             entries: [{ binding: 0, resource: { buffer: this.uniformBufferProjection, size: 16 * 4, offset: 0 }},
                       { binding: 1, resource: { buffer: this.uniformBufferModelView, size: 16 * 4, offset: 0}},
                       { binding: 2, resource: { buffer: this.uniformBufferLightPosition, size: 3 * 4, offset: 0}},
-                      { binding: 3, resource: { buffer: this.uniformBufferLightLD, size: 3 * 4, offset: 0}},
-                      { binding: 4, resource: { buffer: this.uniformBufferLightKD, size: 3 * 4, offset: 0}},
-                      { binding: 5, resource: { buffer: this.uniformBufferLightLA, size: 3 * 4, offset: 0}},
-                      { binding: 6, resource: { buffer: this.uniformBufferLightKA, size: 3 * 4, offset: 0}},
-                      { binding: 7, resource: { buffer: this.uniformBufferLightLS, size: 3 * 4, offset: 0}},
-                      { binding: 8, resource: { buffer: this.uniformBufferLightKS, size: 3 * 4, offset: 0}},
-                      { binding: 9, resource: { buffer: this.uniformBufferMaterialShininess, size: 1 * 4, offset: 0}}]
+                      { binding: 3, resource: { buffer: this.uniformBufferLight, size: 16 * 6, offset: 0}},
+                      { binding: 4, resource: { buffer: this.uniformBufferShininess, size: 4, offset: 0}}
+                     ]
         })
 
         const pipelineDesc: GPURenderPipelineDescriptor = {
@@ -496,20 +466,20 @@ class Renderer {
 
         this.device.queue.writeBuffer(this.uniformBufferLightPosition, 0, lightPos);
 
-        this.device.queue.writeBuffer(this.uniformBufferLightLD, 0, LD);
+        this.device.queue.writeBuffer(this.uniformBufferLight, 0, LD);
 
-        this.device.queue.writeBuffer(this.uniformBufferLightKD, 0, KD);
+        this.device.queue.writeBuffer(this.uniformBufferLight, 16, KD);
 
-        this.device.queue.writeBuffer(this.uniformBufferLightLA, 0, LA);
+        this.device.queue.writeBuffer(this.uniformBufferLight, 32, LA);
 
-        this.device.queue.writeBuffer(this.uniformBufferLightKA, 0, KA);
+        this.device.queue.writeBuffer(this.uniformBufferLight, 48, KA);
 
-        this.device.queue.writeBuffer(this.uniformBufferLightLS, 0, LS);
+        this.device.queue.writeBuffer(this.uniformBufferLight, 64, LS);
 
-        this.device.queue.writeBuffer(this.uniformBufferLightKS, 0, KS);
+        this.device.queue.writeBuffer(this.uniformBufferLight, 80, KS);
 
         const shininess = new Float32Array([128.0])
-        this.device.queue.writeBuffer(this.uniformBufferMaterialShininess, 0,shininess);
+        this.device.queue.writeBuffer(this.uniformBufferShininess, 0,shininess);
  
         this.commandEncoder = this.device.createCommandEncoder();
 
