@@ -50,3 +50,8 @@ npm run dev
 
 ![Screenshot 2023-11-11 at 3 06 40 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/eeba9de5-2f83-4b20-92d9-79fa1f57915c)
 
+## Checkerboard (Procedural Texture)
+
+![Screenshot 2023-11-11 at 5 09 30 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/8276a0ac-dfe5-437b-8b0b-5a8fb98efd09)
+
+
