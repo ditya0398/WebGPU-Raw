@@ -24,11 +24,12 @@ npm run dev
 
 ## 2D Shapes
 
-![Screenshot 2023-11-11 at 3 03 58 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/5c46c486-9b77-4af9-b370-a7ed027815b2)
+![Screenshot 2023-11-11 at 5 19 04 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/992767fa-cb2b-47fb-99b5-d2b3a0a4da7a)
+
 
 ## 3D Shapes
 
-![Screenshot 2023-11-11 at 3 04 22 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/acf1e7ef-bb90-4541-af53-fef341cb195b)
+![Screenshot 2023-11-11 at 5 24 46 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/e086ee28-f3ff-425d-95ed-0a5bdb3177a8)
 
 ## Diffuse Cube
 
