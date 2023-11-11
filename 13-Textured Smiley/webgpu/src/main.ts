@@ -452,8 +452,8 @@ class Renderer{
       let modelMatrix: mat4 = mat4.create();
       let modelViewMat: mat4 = mat4.create();
 
-      var camera = mat4.lookAt(cameraMatrix,[0,0,1],[0,0,0],[0,1,0]);
-      mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,-2.0]);
+      var camera = mat4.lookAt(cameraMatrix,[0,0,0],[0,0,0],[0,1,0]);
+      mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,-1.0]);
       
       mat4.rotateZ(modelMatrix, modelMatrix, this.degToRad(90.0));
       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
