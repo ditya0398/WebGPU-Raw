@@ -20,7 +20,7 @@ npm run dev
 
 ## Square
 
-![Screenshot 2023-11-11 at 3 03 34 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/92e873d9-62e2-4419-9381-aa8f672f1dca)
+![Screenshot 2023-11-11 at 5 15 42 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/7d3b9874-ffd2-4efe-a849-fc79be521ff1)
 
 ## 2D Shapes
 
