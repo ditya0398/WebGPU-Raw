@@ -33,11 +33,11 @@ npm run dev
 
 ## Diffuse Cube
 
-![Screenshot 2023-11-11 at 3 05 02 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/c11dc805-9135-4822-86a9-b51fb430c319)
+![Screenshot 2023-11-11 at 5 26 29 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/644b8490-b900-4858-838c-6200f281d028)
 
 ## Diffuse Sphere
 
-![Screenshot 2023-11-11 at 3 05 21 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/9bfe7316-e2df-4a22-835e-f5b2a5852a6f)
+![Screenshot 2023-11-11 at 5 27 07 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/2afa61ee-9d6f-4f32-93e3-3b3c487a3c3d)
 
 ## Per-Vertex Lighting
 
@@ -49,7 +49,8 @@ npm run dev
 
 ## Textured Smiley
 
-![Screenshot 2023-11-11 at 3 06 40 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/eeba9de5-2f83-4b20-92d9-79fa1f57915c)
+![Screenshot 2023-11-11 at 5 28 47 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/cc9bd0e9-8c7f-40df-8a8c-e04b6b25329f)
+
 
 ## Checkerboard (Procedural Texture)
 
