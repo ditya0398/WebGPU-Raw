@@ -10,6 +10,41 @@ const positionSquare = new Float32Array([
     -1.0 , -1.0 , -1.0 , //le t bottom o  2nd triangle
     1.0 , 1.0 , -1.0 , //right top o  2nd triangle
     1.0 , -1.0 , -1.0 , //right bottom o  2nd triangle
+    //right side
+    1.0 , 1.0 , -1.0 , //right top
+    1.0 , 1.0 , 1.0 , //le t top
+    1.0 , -1.0 , -1.0 , //le t bottom
+    1.0 , -1.0 , -1.0 , //le t bottom o  2nd triangle		
+    1.0 , 1.0 , 1.0 , //right top o  2nd triangle		
+    1.0 , -1.0 , 1.0 , //right bottom o  2nd triangle
+    //Back
+    -1.0 , 1.0 , 1.0 , //le t top
+    1.0 , 1.0 , 1.0 , //right top
+    -1.0 , -1.0 , 1.0 , //le t bottom
+    -1.0 , -1.0 , 1.0 , //le t bottom o  2nd triangle
+    1.0 , 1.0 , 1.0 , //right top o  2nd triangle
+    1.0 , -1.0 , 1.0 , //right bottom o  2nd triangle
+    //Le t side
+    -1.0 , 1.0 , -1.0 , //right top
+    -1.0 , 1.0 , 1.0 , //le t top
+    -1.0 , -1.0 , -1.0 , //le t bottom
+    -1.0 , -1.0 , -1.0 , //le t bottom o  2nd triangle		
+    -1.0 , 1.0 , 1.0 , //right top o  2nd triangle		
+    -1.0 , -1.0 , 1.0 , //right bottom o  2nd triangle
+    //Top
+    -1.0 , 1.0 , 1.0 , //le t top
+     1.0 , 1.0 , 1.0 , //right top
+    -1.0 , 1.0 , -1.0 , //le t bottom
+    -1.0 , 1.0 , -1.0 , //le t bottom o  2nd triangle		
+     1.0 , 1.0 , 1.0 , //right top o  2nd triangle		
+     1.0 , 1.0 , -1.0 , //right bottom o  2nd triangle
+     //Bottom
+    -1.0 , -1.0 , 1.0 , //le t top
+     1.0 , -1.0 , 1.0 , //right top
+    -1.0 , -1.0 , -1.0 , //le t bottom
+    -1.0 , -1.0 , -1.0 , //le t bottom o  2nd triangle		
+     1.0 , -1.0 , 1.0 , //right top o  2nd triangle		
+     1.0 , -1.0 , -1.0 , //right bottom of 2nd triangle
 ]);
 
 //Define the Color data
@@ -25,13 +60,62 @@ const colorSquare = new Float32Array([
 
 const texCoords = new Float32Array([
     +0.0, +0.0,
-    +0.0, +1.0,
-    +1.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +0.0,
+			// triangle 2
+			+1.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +1.0,
 
-    // triangle 2
-    +1.0, +0.0,
-    +0.0, +1.0,
-    +1.0, +1.0,
+			// SIDE 2 ( BOTTOM )
+			// triangle 1
+			+0.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +0.0,
+			// triangle 2
+			+1.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +1.0,
+
+			// SIDE 3 ( RONT )
+			// triangle 1
+			+0.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +0.0,
+			// triangle 2
+			+1.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +1.0,
+
+			// SIDE 4 ( BACK )
+			// triangle 1
+			+0.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +0.0,
+			// triangle 2
+			+1.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +1.0,
+
+			// SIDE 5 ( LET )
+			// triangle 1
+			+0.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +0.0,
+			// triangle 2
+			+1.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +1.0,
+
+			// SIDE 6 ( RIGHT )
+			// triangle 1
+			+0.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +0.0,
+			// triangle 2
+			+1.0, +0.0,
+			+0.0, +1.0,
+			+1.0, +1.0,
 ]);
 
 
@@ -221,7 +305,6 @@ class Renderer{
   {
       // Create the BUFFERS on the GPU 
       this.positionBuffer = this.createBuffer(positionSquare, GPUBufferUsage.VERTEX);
-      this.colorBuffer = this.createBuffer(colorSquare, GPUBufferUsage.VERTEX);
       this.texturebuffer = this.createBuffer(texCoords, GPUBufferUsage.VERTEX);
       //Initializing the SHADERS
       const vsmDesc = {
@@ -251,14 +334,9 @@ class Renderer{
           format: 'float32x3'
       };
 
-      const colorAttribDesc: GPUVertexAttribute = {
-          shaderLocation: 1,
-          offset: 0,
-          format: 'float32x3'
-      }; 
-
+     
       const textureAttribDesc: GPUVertexAttribute = {
-        shaderLocation: 2,
+        shaderLocation: 1,
         offset: 0,
         format: 'float32x2'
     }; 
@@ -269,11 +347,7 @@ class Renderer{
           stepMode: 'vertex'
       };
 
-      const colorBufferDesc: GPUVertexBufferLayout = {
-          attributes: [colorAttribDesc],
-          arrayStride: 4 * 3,
-          stepMode: 'vertex'
-      };
+     
       const textureBufferDesc: GPUVertexBufferLayout = {
         attributes: [textureAttribDesc],
         arrayStride: 4 * 2,
@@ -290,7 +364,7 @@ class Renderer{
       const vertex: GPUVertexState = {
           module: this.vertModule,
           entryPoint: 'main',
-          buffers: [positionBufferDesc, colorBufferDesc, textureBufferDesc]
+          buffers: [positionBufferDesc, textureBufferDesc]
       };
 
       const colorState: GPUColorTargetState = {
@@ -313,7 +387,7 @@ class Renderer{
 
       //Let's create the texture here
           
-      const response = await fetch('./smiley.png');
+      const response = await fetch('./kundali.png');
       const imageBitmap = await createImageBitmap(await response.blob());
   
       this.texture = this.device.createTexture({
@@ -453,9 +527,14 @@ class Renderer{
       let modelViewMat: mat4 = mat4.create();
 
       var camera = mat4.lookAt(cameraMatrix,[0,0,0],[0,0,0],[0,1,0]);
-      mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,-1.0]);
+      const now = Date.now() / 1000;
+      mat4.translate(modelMatrix,modelMatrix,[1.0,0.0,-4.0]);
       
-      mat4.rotateZ(modelMatrix, modelMatrix, this.degToRad(90.0));
+      mat4.rotate(
+        modelMatrix,
+        modelMatrix, 1,
+      [Math.sin(now), Math.cos(now), 0]
+    );
       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
       this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
 
@@ -488,11 +567,11 @@ class Renderer{
           this.canvas.height);
 
       this.passEncoder.setVertexBuffer(0,this.positionBuffer);
-      this.passEncoder.setVertexBuffer(1,this.colorBuffer);
-      this.passEncoder.setVertexBuffer(2, this.texturebuffer);
+
+      this.passEncoder.setVertexBuffer(1, this.texturebuffer);
       this.passEncoder.setBindGroup(0, this.viewParamBG);
       
-      this.passEncoder.draw(6,1,0);
+      this.passEncoder.draw(36,1,0);
       this.passEncoder.end();
 
       this.queue.submit([this.commandEncoder.finish()]);
