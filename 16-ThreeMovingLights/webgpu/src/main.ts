@@ -13,6 +13,7 @@ class Renderer {
     declare device: GPUDevice;
     declare queue: GPUQueue;
 
+    declare angle: any;
 
     //Resources which needs to be passed to the GPU 
     declare positionBufferSphere: GPUBuffer;
@@ -40,7 +41,9 @@ class Renderer {
     declare viewParamBGSphere: GPUBindGroup;
     declare uniformBufferProjection: GPUBuffer;
     declare uniformBufferModelView: GPUBuffer;
-    declare uniformBufferLightPosition: GPUBuffer;
+    declare uniformBufferLightPositionRed: GPUBuffer;
+    declare uniformBufferLightPositionGreen: GPUBuffer;
+    declare uniformBufferLightPositionBlue: GPUBuffer;
     declare uniformBufferLight: GPUBuffer;
     declare uniformBufferShininess: GPUBuffer;
    
@@ -49,6 +52,7 @@ class Renderer {
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
+        this.angle = 0.0;
         // if(this.canvas)
         //     this.toggleFullscreen(this.canvas);
     }
@@ -298,6 +302,8 @@ class Renderer {
                       { binding: 2, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
                       { binding: 3, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform'}},
                       { binding: 4, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform'}},
+                      { binding: 5, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}},
+                      { binding: 6, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform'}}
                        ]
         });
 
@@ -318,12 +324,20 @@ class Renderer {
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
 
-        this.uniformBufferLightPosition = this.device.createBuffer({
+        this.uniformBufferLightPositionRed = this.device.createBuffer({
+            size: (3 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+        this.uniformBufferLightPositionGreen= this.device.createBuffer({
+            size: (3 * 4),
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+        this.uniformBufferLightPositionBlue= this.device.createBuffer({
             size: (3 * 4),
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
         this.uniformBufferLight = this.device.createBuffer({
-            size: (16 * 6),
+            size: (16 * 18),
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
         this.uniformBufferShininess = this.device.createBuffer({
@@ -338,9 +352,11 @@ class Renderer {
             layout: bindGroupLayout,
             entries: [{ binding: 0, resource: { buffer: this.uniformBufferProjection, size: 16 * 4, offset: 0 }},
                       { binding: 1, resource: { buffer: this.uniformBufferModelView, size: 16 * 4, offset: 0}},
-                      { binding: 2, resource: { buffer: this.uniformBufferLightPosition, size: 3 * 4, offset: 0}},
-                      { binding: 3, resource: { buffer: this.uniformBufferLight, size: 16 * 6, offset: 0}},
-                      { binding: 4, resource: { buffer: this.uniformBufferShininess, size: 4, offset: 0}}
+                      { binding: 2, resource: { buffer: this.uniformBufferLightPositionRed, size: 3 * 4, offset: 0}},
+                      { binding: 3, resource: { buffer: this.uniformBufferLight, size: 16 * 18, offset: 0}},
+                      { binding: 4, resource: { buffer: this.uniformBufferShininess, size: 4, offset: 0}},
+                      { binding: 5, resource: { buffer: this.uniformBufferLightPositionGreen, size: 3 * 4, offset: 0}},
+                      { binding: 6, resource: { buffer: this.uniformBufferLightPositionBlue, size: 3 * 4, offset: 0}}
                      ]
         })
 
@@ -391,6 +407,11 @@ class Renderer {
         this.depthTexture = this.device.createTexture(depthTextureDesc);
         this.depthTextureView = this.depthTexture.createView();
     }
+    deg2rad(degrees: any)
+    {
+        var rad = degrees * Math.PI / 180.0;
+        return rad;
+    }
 
     encodeCommands() {
         let colorAttachment: GPURenderPassColorAttachment = {
@@ -433,17 +454,18 @@ class Renderer {
         // );
         mat4.mul(modelViewMat, modelMatrix, cameraMatrix);
 
-        const now = Date.now() / 1000;
-
+        let now = Date.now() / 1000;
+        //now = this.angle;
         mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
         let lightPos: vec3 = vec3.create();
-        vec3.set(lightPos, Math.sin(now),Math.cos(now),0,1.0);
+        vec3.set(lightPos, 0.0,5.5 * Math.sin(now), 5.5 *Math.cos(now));
+       // vec3.set(lightPos, 5.5 * 0, 5.5 *Math.cos(now),5.5 * Math.sin(now));
 
         let LD: vec3 = vec3.create();
         vec3.set(LD, 1.0,0.0,0.0);
 
         let KD: vec3 = vec3.create();
-        vec3.set(KD, 1.0,0.0,0.0);
+        vec3.set(KD, 1.0,1.0,1.0);
         
         let LA: vec3 = vec3.create();
         vec3.set(LA, 0.0,0.0,0.0);
@@ -452,10 +474,60 @@ class Renderer {
         vec3.set(KA, 0.0,0.0,0.0);
 
         let LS: vec3 = vec3.create();
-        vec3.set(LS, 1.0,1.0,1.0);
+        vec3.set(LS, 1.0,0.0,0.0);
 
         let KS: vec3 = vec3.create();
         vec3.set(KS, 1.0,1.0,1.0);
+
+
+        
+        //Green
+        let lightPosGreen: vec3 = vec3.create();
+        
+        vec3.set(lightPosGreen, 5.5 * Math.sin(now),0, 5.5 *Math.cos(now));
+
+        let LDGreen: vec3 = vec3.create();
+        vec3.set(LDGreen, 0.0,1.0,0.0);
+
+        let KDGreen: vec3 = vec3.create();
+        vec3.set(KDGreen, 1.0,1.0,1.0);
+        
+        let LAGreen: vec3 = vec3.create();
+        vec3.set(LAGreen, 0.0,0.0,0.0);
+
+        let KAGreen: vec3 = vec3.create();
+        vec3.set(KAGreen, 0.0,0.0,0.0);
+
+        let LSGreen: vec3 = vec3.create();
+        vec3.set(LSGreen, 0.0,1.0,0.0);
+
+        let KSGreen: vec3 = vec3.create();
+        vec3.set(KSGreen, 1.0,1.0,1.0);
+
+
+
+        //Blue
+        let lightPosBlue: vec3 = vec3.create();
+        vec3.set(lightPosBlue, 5.5 * Math.sin(now), 5.5 *Math.cos(now),1.0);
+
+        let LDBlue: vec3 = vec3.create();
+        vec3.set(LDBlue, 0.0,0.0,1.0);
+
+        let KDBlue: vec3 = vec3.create();
+        vec3.set(KDBlue, 1.0,1.0,1.0);
+        
+        let LABlue: vec3 = vec3.create();
+        vec3.set(LABlue, 0.0,0.0,0.0);
+
+        let KABlue: vec3 = vec3.create();
+        vec3.set(KABlue, 0.0,0.0,0.0);
+
+        let LSBlue: vec3 = vec3.create();
+        vec3.set(LSBlue, 0.0,0.0,1.0);
+
+        let KSBlue: vec3 = vec3.create();
+        vec3.set(KSBlue, 1.0,1.0,1.0);
+
 
 
        // this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
@@ -464,7 +536,11 @@ class Renderer {
 
         this.device.queue.writeBuffer(this.uniformBufferModelView, 0, modelViewMat);
 
-        this.device.queue.writeBuffer(this.uniformBufferLightPosition, 0, lightPos);
+        this.device.queue.writeBuffer(this.uniformBufferLightPositionRed, 0, lightPos);
+
+        this.device.queue.writeBuffer(this.uniformBufferLightPositionGreen, 0, lightPosGreen);
+
+        this.device.queue.writeBuffer(this.uniformBufferLightPositionBlue, 0, lightPosBlue);
 
         this.device.queue.writeBuffer(this.uniformBufferLight, 0, LD);
 
@@ -477,6 +553,30 @@ class Renderer {
         this.device.queue.writeBuffer(this.uniformBufferLight, 64, LS);
 
         this.device.queue.writeBuffer(this.uniformBufferLight, 80, KS);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 96, LDGreen);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 112, KDGreen);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 128, LAGreen);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 144, KAGreen);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 160, LSGreen);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 176, KSGreen);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 192, LDBlue);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 208, KDBlue);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 224, LABlue);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 240, KABlue);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 256, LSBlue);
+
+        this.device.queue.writeBuffer(this.uniformBufferLight, 272, KSBlue);
 
         const shininess = new Float32Array([128.0])
         this.device.queue.writeBuffer(this.uniformBufferShininess, 0,shininess);
@@ -521,6 +621,9 @@ class Renderer {
 
             //write and submit commands to queue
             this.encodeCommands();
+            this.angle = this.angle + 0.04;
+            if(this.angle >= 360.0)
+                this.angle = 0.0;
 
             //refresh Canvas
             requestAnimationFrame(this.render);

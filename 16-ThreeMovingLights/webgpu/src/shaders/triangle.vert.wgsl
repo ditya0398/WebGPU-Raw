@@ -2,7 +2,9 @@ struct VSOut {
     @builtin(position) Position: vec4f,
     @location(0) tNorm: vec3f,
     @location(1) light_direction: vec3f,
-    @location(2) view_vector: vec3f
+    @location(2) view_vector: vec3f,
+     @location(3) light_direction_green: vec3f,
+     @location(4) light_direction_blue: vec3f,
  };
 
 struct ViewParams {
@@ -22,6 +24,14 @@ var<uniform> model_view: mat4x4<f32>;
 var<uniform> light_position: vec3f;
 
 
+@group(0) @binding(5)
+var<uniform> light_position_green: vec3f;
+
+
+@group(0) @binding(6)
+var<uniform> light_position_Blue: vec3f;
+
+
 @vertex
 fn main(@location(0) inPos: vec3f,
         @location(1) inNormal: vec3f) -> VSOut {
@@ -36,6 +46,8 @@ fn main(@location(0) inPos: vec3f,
 
     vsOut.tNorm = normal_matrix * inNormal;
     vsOut.light_direction = vec3f(light_position - eye_coordinates.xyz);
+    vsOut.light_direction_green = vec3f(light_position_green - eye_coordinates.xyz);
+    vsOut.light_direction_blue = vec3f(light_position_Blue - eye_coordinates.xyz);
     vsOut.view_vector= vec3f(-eye_coordinates.xyz);
 
     vsOut.Position = view_params.view_proj * model_view * vec4f(inPos, 1);
