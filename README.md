@@ -63,4 +63,8 @@ npm run dev
 ![Screenshot 2023-11-11 at 11 33 44 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/b770f394-05b3-4445-85c8-82451e8de1b1)
 
 
+## Procedural Sun 
+
+<img width="652" alt="image" src="https://github.com/ditya0398/WebGPU-Raw/assets/53263733/24544c5b-cb4e-4ef2-86ae-c1dd7c47272d">
+
 
