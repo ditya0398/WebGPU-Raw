@@ -314,56 +314,7 @@ class Renderer{
           topology: 'triangle-list'
       }
 
-
-      //Let's create the texture here
-          
-    //   const response = await fetch('./smiley.png');
-    //   const imageBitmap = await createImageBitmap(await response.blob());
-  
-    
-  
-    var texData = new Uint8Array(height * width * depth)
-	for (let i = 0; i < height; i++) {
-		for (let j = 0; j < width; j++) {
-			var c = ((i & 8) ^ (j & 8)) * 255;
-			texData[(i * 64 + j) * 4 + 0] = c
-			texData[(i * 64 + j) * 4 + 1] = c
-			texData[(i * 64 + j) * 4 + 2] = c
-			texData[(i * 64 + j) * 4 + 3] = 255
-		}
-	}
-    
-    // const kTextureWidth = 5;
-    // const kTextureHeight = 7;
-    // const _ = [255,   0,   0, 255];  // red
-    // const y = [255, 255,   0, 255];  // yellow
-    // const b = [  0,   0, 255, 255];  // blue
-    // const textureData = new Uint8Array([
-    //   b, _, _, _, _,
-    //   _, y, y, y, _,
-    //   _, y, _, _, _,
-    //   _, y, y, _, _,
-    //   _, y, _, _, _,
-    //   _, y, _, _, _,
-    //   _, _, _, _, _,
-    // ].flat());
-
-      const texture = this.device.createTexture({
-        size: [width, height],
-        format: 'rgba8unorm',
-        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
-      });
-
-      this.device.queue.writeTexture(
-       {texture},
-       texData,
-       {offset: 0, bytesPerRow: width * 4 },
-       {width: width, height: height, 
-        depthOrArrayLayers: 1 /*VERY Important: this does not means how many members are there as depth, but this means
-                                 is there any layer? if it is a 3D Array, keep it to 1, if it is 4D Keep it to 2 and the list 
-                                 goes on...*/}
-      );
-    
+     
 
     // Create a sampler with linear filtering for smooth interpolation.
     this.sampler = this.device.createSampler({
@@ -373,16 +324,10 @@ class Renderer{
       addressModeV: 'repeat'
     });
 
-
-
-
-
-     
       //Bind Group Layouts
       var bindGroupLayout = this.device.createBindGroupLayout({
         entries: [{binding: 0, visibility: GPUShaderStage.VERTEX, buffer: {type: 'uniform'}},
-                  {binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: {}},
-                  {binding: 2, visibility: GPUShaderStage.FRAGMENT, sampler: {}}]
+                  {binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {}}]
       });
 
 
@@ -401,8 +346,7 @@ class Renderer{
          this.viewParamBG = this.device.createBindGroup({
             layout: bindGroupLayout,
             entries: [{binding: 0, resource: {buffer: this.viewParamsBuffer}},
-                      {binding: 1, resource: texture.createView() },
-                      {binding: 2, resource: this.sampler}]
+                      {binding: 1, resource: this.sampler}]
         });
 
 
@@ -490,7 +434,7 @@ class Renderer{
 
       var camera = mat4.lookAt(cameraMatrix,[0,0,0],[0,0,0],[0,1,0]);
       mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,0.0]);
-      
+    
       mat4.rotateZ(modelMatrix, modelMatrix, this.degToRad(90.0));
       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
       this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
