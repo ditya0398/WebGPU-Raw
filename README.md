@@ -65,6 +65,7 @@ npm run dev
 
 ## Procedural Sun 
 
-<img width="652" alt="image" src="https://github.com/ditya0398/WebGPU-Raw/assets/53263733/24544c5b-cb4e-4ef2-86ae-c1dd7c47272d">
+<img width="935" alt="image" src="https://github.com/ditya0398/WebGPU-Raw/assets/53263733/3e59574d-aa58-4687-8023-fe61aca92ea3">
+
 
 
