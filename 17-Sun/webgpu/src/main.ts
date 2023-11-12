@@ -72,6 +72,26 @@ class Renderer{
   declare texturebuffer: GPUBuffer;
   declare textureView: GPUTextureView;
   declare sampler: GPUSampler;
+ 
+
+  
+  toggleFullscreen(canvas: HTMLCanvasElement) {
+    let fullscreenEle = document.fullscreenElement || null
+        if (fullscreenEle == null) {
+            if (canvas.requestFullscreen)
+                canvas.requestFullscreen()
+        }
+    }
+    addListeners()
+    {
+      window.addEventListener('keydown', (event) => {
+          switch (event.key) {
+              case 'f':
+                  this.toggleFullscreen(this.canvas);
+                  break;
+          }
+        });
+    }
 
 
   constructor(canvas: HTMLCanvasElement){
@@ -81,11 +101,14 @@ class Renderer{
   //Main entry point function
   async start(){
       if(await this.initializeAPI()){
+          this.addListeners();
           this.resizeBackings();
           await this.initializeResources();
           this.render();
       }
   }
+ 
+ 
 
   // WebGPU is an asynchronous API so it’s easiest to use in an async function. 
   async initializeAPI(): Promise<boolean>{
@@ -407,7 +430,7 @@ class Renderer{
   {
       let colorAttachment: GPURenderPassColorAttachment = {
           view: this.colorTextureView,
-          clearValue: {r: 0, g: 0, b: 0, a: 1},
+          clearValue: {r: 0, g: 0, b: 1, a: 1},
           loadOp: 'clear',
           storeOp: 'store'
       };
