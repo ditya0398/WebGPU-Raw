@@ -68,6 +68,7 @@ npm run dev
 
 ## Perlin Noise
 
-<img width="605" alt="image" src="https://github.com/ditya0398/WebGPU-Raw/assets/53263733/2cf163a8-198f-4b78-9114-18e398747061">
+<img width="852" alt="image" src="https://github.com/ditya0398/WebGPU-Raw/assets/53263733/015a2542-de56-43c7-a97e-7f5e2663bcbb">
+
 
 
