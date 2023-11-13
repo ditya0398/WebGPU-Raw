@@ -62,10 +62,12 @@ npm run dev
 
 ![Screenshot 2023-11-11 at 11 33 44 PM](https://github.com/ditya0398/WebGPU-Raw/assets/53263733/b770f394-05b3-4445-85c8-82451e8de1b1)
 
-
 ## Procedural Sun 
 
 <img width="935" alt="image" src="https://github.com/ditya0398/WebGPU-Raw/assets/53263733/3e59574d-aa58-4687-8023-fe61aca92ea3">
 
+## Perlin Noise
+
+<img width="605" alt="image" src="https://github.com/ditya0398/WebGPU-Raw/assets/53263733/2cf163a8-198f-4b78-9114-18e398747061">
 
 
