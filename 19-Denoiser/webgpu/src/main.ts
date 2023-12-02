@@ -313,7 +313,7 @@ class Renderer{
 
       //Let's create the texture here
           
-      const response = await fetch('./smiley.png');
+      const response = await fetch('./image1.png');
       const imageBitmap = await createImageBitmap(await response.blob());
   
       this.texture = this.device.createTexture({
@@ -454,8 +454,9 @@ class Renderer{
 
       var camera = mat4.lookAt(cameraMatrix,[0,0,0],[0,0,0],[0,1,0]);
       mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,-1.0]);
+      mat4.scale(modelMatrix,modelMatrix,[2.0,2.0,1.0]);
       
-      mat4.rotateZ(modelMatrix, modelMatrix, this.degToRad(90.0));
+      mat4.rotateZ(modelMatrix, modelMatrix, this.degToRad(270.0));
       mat4.mul(modelViewMat, cameraMatrix, modelMatrix);
       this.projView = mat4.mul(this.projView, this.proj, modelViewMat);
 
