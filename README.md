@@ -1,4 +1,4 @@
-# WebGPU (WIP)
+# WebGPU
 
 This repo defines my work in native WebGPU.
 
